@@ -4,6 +4,8 @@ import { go, href } from '../route';
 import Rich from '../components/Rich';
 import CultureChip from '../components/CultureChip';
 import Distill from '../components/Distill';
+import Term from '../components/Term';
+import Bottom, { HowTo, Lvl, Num } from '../components/Bottom';
 import { archLink, domains, engine, flows, leadership, persons, plain, sphereById, sphereColor, yearText, SRC } from '../lib/graph';
 
 const FAMS = [
@@ -23,6 +25,9 @@ export default function Culture({ params }: { params: Record<string, string> }) 
   const relay = leaders.filter((l, i) => !i || l !== leaders[i - 1]);
   const used = [...new Set(rows.flatMap((r) => r.ranked.map(([s]) => s)))];
   const maxOut = Math.max(...eng.map((e) => Math.max(e.out, e.inn)));
+  // הרצף הארוך ביותר של אותה מובילה בתקופות רצופות
+  let run = 0, maxRun = 0, prev = '';
+  for (const r of rows) { run = r.leader && r.leader === prev ? run + 1 : 1; prev = r.leader || ''; maxRun = Math.max(maxRun, run); }
   const top = eng[0], importer = [...eng].sort((a, b) => b.inn - a.inn)[0];
 
   // למה: עובדות מתוך הגילויים של התרבות המובילה בתקופה
@@ -52,17 +57,22 @@ export default function Culture({ params }: { params: Record<string, string> }) 
 
   return (
     <div className="page culture-page">
-      <section className="qhead">
-        <div>
-          <p className="kicker">תרבות כמנוע ידע</p>
-          <h1>איזו תרבות <mark>הובילה</mark> כל תקופת גילויים, ולמה?</h1>
-        </div>
-        <div className="bignums">
-          <div className="bn"><b>{relay.length}</b><span>מובילות ברצף, ב-{rows.length} תקופות</span></div>
-          <div className="bn"><b>{top.out}</b><span>רעיונות ש{name(top.s)} מסרה לאחרות</span></div>
-          <div className="bn"><b>{importer.inn}</b><span>רעיונות ש{name(importer.s)} קיבלה</span></div>
-        </div>
-      </section>
+      <Bottom
+        kicker="תרבות כמנוע · איזו תרבות הובילה כל תקופת גילויים, ולמה?"
+        main={`ההובלה במדע ==עברה ${relay.length - 1} פעמים.==`}
+        plain={`${maxRun === 1 ? '**אף תרבות לא הובילה שתי תקופות ברציפות.**' : `**הרצף הארוך ביותר: ${maxRun} תקופות.**`} מ**${name(relay[0])}** בעת העתיקה ועד **${name(relay[relay.length - 1])}** היום.`}
+        adopt="**הובלה היא שלב, לא תכונה.** היא עוברת למקום שקולט רעיונות מאחרים, מפתח אותם ומעביר הלאה."
+        nums={<>
+          <Num primary v={relay.length - 1}>חילופי <Term k="lead">הובלה</Term>, ב-{rows.length} תקופות</Num>
+          <Num v={top.out}>רעיונות ש{name(top.s)} <Term k="outin">העבירה</Term> לאחרות</Num>
+          <Num v={importer.inn}>רעיונות ש{name(importer.s)} קלטה מאחרות</Num>
+        </>}
+      />
+      <HowTo steps={[
+        '**כל עמודה היא תקופה**, מהעתיקה (ימין) עד היום. השם מעל העמודה: התרבות שהובילה.',
+        '**לחצו על עמודה** כדי לראות בצד למה דווקא היא הובילה: תחומים, אנשים ומקומות.',
+        '**להעמקה, למטה:** מי העבירה רעיונות לתרבויות אחרות, ומי קלטה.',
+      ]} />
 
       <div className="seg" role="group" aria-label="סינון לפי משפחת תחומים">
         {FAMS.map((f) => <a key={f.id} className={`seg-b press ${fam === f.id ? 'on' : ''}`} href={href('culture', { f: f.id, p: params.p })}>{f.he}</a>)}
@@ -70,8 +80,8 @@ export default function Culture({ params }: { params: Record<string, string> }) 
 
       <div className="split">
         <section className="canvas-wrap">
-          <h2 className="chart-t">מקל השליחים: חלק כל תרבות בגילויים של כל תקופה</h2>
-          <p className="chart-sub">כל עמודה היא תקופה, מהעתיקה (מימין) ועד היום. גובה הצבע: חלק התרבות בגילויים. השם מעל העמודה: המובילה.</p>
+          <h2 className="sec-h"><Lvl n={2} />מי הובילה בכל תקופה</h2>
+          <p className="chart-sub"><b>גובה הצבע = חלק התרבות בגילויים של התקופה.</b> הצבע החזק: המובילה. המספר: כמה גילויים היו בתקופה.</p>
           <div className="bands" data-testid="bands">
             {rows.map((r) => (
               <button key={r.period.id} className={`band press ${r.period.id === sel.period.id ? 'on' : ''}`} onClick={() => go('culture', { f: fam, p: r.period.id })} aria-pressed={r.period.id === sel.period.id}>
@@ -84,11 +94,11 @@ export default function Culture({ params }: { params: Record<string, string> }) 
               </button>
             ))}
           </div>
-          <Rich as="p" className="insight" text={`==ההנהגה עברה ${relay.length - 1} פעמים.== ${relay.map((s) => `**${name(s)}**`).join(' ← ')}.`} />
+          <Rich as="p" className="insight" text={`==הסדר שבו עברה ההובלה:== ${relay.map((s) => `**${name(s)}**`).join(' ← ')}.`} />
           <div className="legend legend-wrap">{used.filter((s) => s !== 'other').map((s) => <CultureChip key={s} s={s} small />)}</div>
 
-          <h2 className="chart-t">מנוע הידע: מי מסרה רעיונות לתרבויות אחרות, ומי קיבלה</h2>
-          <p className="chart-sub">ספירת הקשרים המתועדים בעולם נעלם שחוצים גבול תרבות. מימין: מסרה. משמאל: קיבלה.</p>
+          <h2 className="sec-h"><Lvl n={3} />מי העבירה רעיונות הלאה, ומי קלטה</h2>
+          <p className="chart-sub"><b>ימין: רעיונות שיצאו מהתרבות והמשיכו אצל אחרת. שמאל: רעיונות שנכנסו אליה.</b> רק קשרים מוכחים במקור.</p>
           <div className="engine" data-testid="engine">
             {eng.slice(0, 10).map((e) => (
               <div key={e.s} className="eng-row">
@@ -98,10 +108,10 @@ export default function Culture({ params }: { params: Record<string, string> }) 
               </div>
             ))}
           </div>
-          <Rich as="p" className="insight" text={`==${name(top.s)} היא המנוע, ${name(importer.s)} היא הקולטת.== הזרימה הגדולה: **${name(fl[0].a)}** ל**${name(fl[0].b)}**, ${fl[0].v} רעיונות.`} />
+          <Rich as="p" className="insight" text={`==${name(top.s)} העבירה הכי הרבה, ${name(importer.s)} קלטה הכי הרבה.== המסלול העמוס ביותר: מ**${name(fl[0].a)}** אל **${name(fl[0].b)}**, **${fl[0].v}** רעיונות.`} />
           <div className="flows">
             {fl.slice(0, 6).map((f) => (
-              <span key={f.a + f.b} className="flow"><CultureChip s={f.a} small /><em>מסרה ל</em><CultureChip s={f.b} small /><b>{f.v}</b></span>
+              <span key={f.a + f.b} className="flow"><CultureChip s={f.a} small /><em>העבירה אל</em><CultureChip s={f.b} small /><b>{f.v}</b></span>
             ))}
           </div>
         </section>
@@ -113,19 +123,19 @@ export default function Culture({ params }: { params: Record<string, string> }) 
               <>
                 <h2>{name(sel.leader)}</h2>
                 <div className="bigpct" style={{ color: sphereColor(sel.leader) }}>{pct(sel.share)}</div>
-                <p className="small">מהגילויים בתקופה ({sel.counts.get(sel.leader)} מתוך {sel.total}){sel.second ? `. אחריה: ${name(sel.second)}, ${sel.counts.get(sel.second)}` : ''}.</p>
+                <p className="small"><b>מהגילויים בתקופה</b> ({sel.counts.get(sel.leader)} מתוך {sel.total}){sel.second ? `. אחריה: ${name(sel.second)}, ${sel.counts.get(sel.second)}` : ''}.</p>
                 {why && (
                   <div className="why">
-                    <h3>למה: מה הנתונים מראים <span className="tag tag-fact">עובדה</span></h3>
+                    <h3>למה היא: מה הנתונים מראים <span className="tag tag-fact">עובדה</span></h3>
                     <p>בתחומים: {why.doms.map(([d, c]) => <span key={d} className="pill">{domains[d]?.he} <b>{c}</b></span>)}</p>
                     <p>הדמויות: {why.ppl.map(([p]) => persons[p]?.he).filter(Boolean).join(', ')}</p>
                     {why.places.length > 0 && <p>המקומות: {why.places.map(([p]) => p).join(', ')}</p>}
-                    {why.e && <p>מסרה <b>{why.e.out}</b> רעיונות לתרבויות אחרות וקיבלה <b>{why.e.inn}</b>.</p>}
+                    {why.e && <p><b>העבירה {why.e.out}</b> רעיונות לתרבויות אחרות, וקלטה <b>{why.e.inn}</b>.</p>}
                   </div>
                 )}
                 {sp?.arch ? (
                   <div className="arch">
-                    <h3>למה: הארכיטייפ <span className="tag tag-int">פרשנות</span></h3>
+                    <h3>למה היא: <Term k="arch" /> <span className="tag tag-int">פרשנות</span></h3>
                     <p className="arch-name">{sp.arch.archetype}</p>
                     <p><b>הסדר:</b> {sp.arch.order}. <b>הכאוס:</b> {sp.arch.chaos}.</p>
                     <blockquote>{sp.arch.insight}</blockquote>
@@ -133,7 +143,7 @@ export default function Culture({ params }: { params: Record<string, string> }) 
                   </div>
                 ) : sp?.proposal ? (
                   <div className="arch arch-hyp">
-                    <h3>ארכיטייפ מוצע <span className="tag tag-hyp">הנחה</span></h3>
+                    <h3><Term k="arch" />, הצעה שלנו <span className="tag tag-hyp">השערה</span></h3>
                     <p className="arch-name">{sp.proposal.archetype}</p>
                     <Rich as="p" text={sp.proposal.why} />
                     <p className="small">לתרבות הזו אין עדיין ארכיטייפ ב<a href={SRC.architaip.url} target="_blank" rel="noopener">ארכיטייפ</a>. ההצעה ממתינה לבדיקה.</p>

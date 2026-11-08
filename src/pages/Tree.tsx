@@ -4,9 +4,12 @@ import { go, href } from '../route';
 import Rich from '../components/Rich';
 import CultureChip from '../components/CultureChip';
 import Distill from '../components/Distill';
+import Term from '../components/Term';
+import Bottom, { HowTo, Lvl, Num } from '../components/Bottom';
+import { confPlain, typePlain } from '../lib/glossary';
 import {
-  childrenOf, confName, domains, ideasWithLineage, lineage, nodeById, olamLink, parallelsOf, parentsOf, plain, sphereById, sphereColor,
-  typeShort, yearText, type Link, type Node,
+  childrenOf, domains, ideasWithLineage, lineage, nodeById, olamLink, parallelsOf, parentsOf, plain, sphereById, sphereColor,
+  yearText, type Link, type Node,
 } from '../lib/graph';
 
 const MAXG = 3;     // דורות לכל צד
@@ -48,12 +51,20 @@ export default function Tree({ params }: { params: Record<string, string> }) {
     return { cols, hidden, minC, maxC, W, H, pos, edges };
   }, [focus, L]);
 
-  const insight = (() => {
-    const nC = L.cultures.size;
-    if (!L.anc.length) return `==${focus.t}: רעיון שורש.== אין לו אבות מתועדים, ו-**${L.desc.length}** רעיונות יורשים ממנו לאורך **${L.leaf ? L.leaf.y - focus.y : 0}** שנים.`;
-    if (!L.desc.length) return `==${focus.t}: סוף השושלת המתועדת.== **${L.anc.length}** אבות, והשורש הוא **${L.root!.who || L.root!.t}** ב-${yearText(L.root!.y)}.`;
-    return `==${nC} תרבויות מסרו את המקל.== מ**${L.root!.who || L.root!.t}** (${yearText(L.root!.y)}) דרך ${focus.who || focus.t} ועד **${L.leaf!.who || L.leaf!.t}** (${yearText(L.leaf!.y)}).`;
-  })();
+  // מהסוף להתחלה: העיקר, בפשטות, ומה לקחת מזה. מחושב מהשושלת שנבחרה.
+  const nC = L.cultures.size;
+  const rootN = L.root ? (L.root.who || L.root.t) : '';
+  const leafN = L.leaf ? (L.leaf.who || L.leaf.t) : '';
+  const bl = !L.anc.length
+    ? { main: `${focus.t} הוא ==רעיון שורש.==`, plain: `אין לו רעיונות קודמים מוכחים. **${L.desc.length}** רעיונות נבנו עליו, לאורך **${L.leaf ? L.leaf.y - focus.y : 0}** שנים.` }
+    : !L.desc.length
+    ? { main: `${focus.t} הוא ==סוף השושלת המוכחת.==`, plain: `הוא נשען על **${L.anc.length}** רעיונות קודמים. הראשון שבהם: **${rootN}**, ב-${yearText(L.root!.y)}. עוד לא תיעדנו מי המשיך אותו.` }
+    : { main: `הרעיון עבר דרך ==${nC} תרבויות.==`, plain: `**${focus.t}** נשען על **${L.anc.length}** רעיונות קודמים, ו-**${L.desc.length}** רעיונות נבנו עליו. הקו מתחיל ב**${rootN}** (${yearText(L.root!.y)}) ומגיע עד **${leafN}** (${yearText(L.leaf!.y)}).` };
+  const adopt = nC >= 3
+    ? '**רעיון גדול לא נשאר בבית.** הוא מתחזק כשהוא עובר לתרבות אחרת, שמוסיפה לו שכבה משלה.'
+    : !L.anc.length
+    ? '**כל מה שמשמאל לו בגרף נשען עליו.** בלי רעיון השורש, השרשרת כולה לא הייתה קיימת.'
+    : '**שושלת קצרה בתיעוד.** כנראה שחסרים קשרים. כדאי לבדוק מי עוד הושפע ממנו.';
 
   const context = () => [
     `רעיון במרכז: ${focus.t} (${yearText(focus.y)}, ${focus.who}, ${sphereById.get(focus.s)?.he}). חידוש: ${plain(focus.nv)}`,
@@ -63,17 +74,20 @@ export default function Tree({ params }: { params: Record<string, string> }) {
 
   return (
     <div className="page tree-page">
-      <section className="qhead">
-        <div>
-          <p className="kicker">עץ הרעיונות</p>
-          <h1>ממי ירש <mark>{focus.t}</mark>, ולמי מסר?</h1>
-        </div>
-        <div className="bignums">
-          <div className="bn"><b>{L.anc.length}</b><span>אבות ב-{L.depthUp} דורות</span></div>
-          <div className="bn"><b>{L.desc.length}</b><span>צאצאים ב-{L.depthDown} דורות</span></div>
-          <div className="bn"><b>{L.cultures.size}</b><span>תרבויות בשושלת</span></div>
-        </div>
-      </section>
+      <Bottom
+        kicker={<>עץ הרעיונות · ממי ירש {focus.t}, ולמי מסר?</>}
+        main={bl.main} plain={bl.plain} adopt={adopt}
+        nums={<>
+          <Num primary v={nC}><Term k="culture">תרבויות</Term> בשושלת</Num>
+          <Num v={L.anc.length}><Term k="anc" />, ב-{L.depthUp} <Term k="gen">דורות</Term></Num>
+          <Num v={L.desc.length}><Term k="desc" />, ב-{L.depthDown} דורות</Num>
+        </>}
+      />
+      <HowTo steps={[
+        '**בחרו רעיון** מהרשימה, או חפשו שם של רעיון או של אדם.',
+        '**ימין: מה קדם לו. שמאל: מה נבנה עליו.** הפס הצבעוני בכרטיס הוא התרבות.',
+        '**לחיצה על כרטיס** מעבירה אותו למרכז. בצד: ההסבר המלא, ומאיפה הקשר.',
+      ]} />
 
       <section className="picker" aria-label="בחירת רעיון">
         <input className="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="חיפוש רעיון או דמות" aria-label="חיפוש רעיון" data-testid="tree-search" />
@@ -84,12 +98,13 @@ export default function Tree({ params }: { params: Record<string, string> }) {
             </a>
           ))}
         </div>
-        <p className="hint">המספר ליד כל רעיון: כמה אבות וצאצאים יש לו. קודם רעיונות שיש להם גם עבר וגם המשך. בגרף עד {MAXG} דורות לכל צד, והשאר ברשימה.</p>
+        <p className="hint">המספר ליד כל רעיון: <b>כמה רעיונות קשורים אליו</b>. קודם מופיעים רעיונות שיש להם גם עבר וגם המשך.</p>
       </section>
 
       <div className="split">
         <section className="canvas-wrap">
-          <div className="axis"><span>העבר: אבות</span><span>הרעיון</span><span>ההמשך: צאצאים</span></div>
+          <h2 className="sec-h"><Lvl n={2} />העץ: {L.anc.length} רעיונות לפניו, {L.desc.length} אחריו</h2>
+          <div className="axis"><span>מה קדם לו</span><span>הרעיון שבחרתם</span><span>מה נבנה עליו</span></div>
           <div className="canvas" data-testid="tree-canvas">
             <svg viewBox={`0 0 ${layout.W} ${layout.H}`} role="img" aria-label="עץ שושלת הרעיון">
               <defs>
@@ -108,7 +123,7 @@ export default function Tree({ params }: { params: Record<string, string> }) {
                 const n = nodeById.get(nid)!;
                 const x = p.x;
                 return (
-                  <g key={nid} className={`node press ${nid === id ? 'focus' : ''}`} transform={`translate(${x},${p.y})`} onClick={() => go('tree', { id: nid })} role="link" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && go('tree', { id: nid })}>
+                  <g key={nid} className={`node ${nid === id ? 'focus' : ''}`} transform={`translate(${x},${p.y})`} onClick={() => go('tree', { id: nid })} role="link" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && go('tree', { id: nid })}>
                     <rect width={NW} height={NH} rx={6} />
                     <rect x={NW - 6} width={6} height={NH} rx={2} fill={sphereColor(n.s)} />
                     <text x={NW - 14} y={22} className="n-t">{n.t.length > 22 ? n.t.slice(0, 21) + '…' : n.t}</text>
@@ -123,12 +138,11 @@ export default function Tree({ params }: { params: Record<string, string> }) {
             </svg>
           </div>
           <div className="legend">
-            <span><i className="lg lg-influenced" />השפעה</span>
-            <span><i className="lg lg-enabled" />איפשור</span>
-            <span><i className="lg lg-opposed" />התנגדות</span>
-            <span className="lg-sep">פס הצבע בכרטיס: התרבות שבה נולד הרעיון</span>
+            <span><i className="lg lg-influenced" /><Term k="influenced" /></span>
+            <span><i className="lg lg-enabled" /><Term k="enabled" /></span>
+            <span><i className="lg lg-opposed" /><Term k="opposed" /></span>
+            <span className="lg-sep">פס הצבע בכרטיס: <Term k="culture">התרבות</Term> שבה נולד הרעיון. עד {MAXG} דורות לכל צד, השאר בצד.</span>
           </div>
-          <Rich as="p" className="insight" text={insight} />
 
           {/* בנייד: רשימה במקום גרף */}
           <div className="tree-list">
@@ -144,10 +158,11 @@ export default function Tree({ params }: { params: Record<string, string> }) {
             <h2>{focus.t}</h2>
             <p className="who">{focus.who}</p>
             <CultureChip s={focus.s} />
-            {focus.nv && <div className="kv"><span>החידוש</span><Rich text={focus.nv} /></div>}
-            {focus.cn && <div className="kv"><span>התרומה</span><Rich text={focus.cn} /></div>}
-            <Near title="ירש ישירות מ" links={parentsOf(id)} dir="up" />
-            <Near title="מסר ישירות ל" links={childrenOf(id)} dir="down" />
+            <Lvl n={3} />
+            {focus.nv && <div className="kv"><span>מה היה חדש</span><Rich text={focus.nv} /></div>}
+            {focus.cn && <div className="kv"><span>מה זה תרם</span><Rich text={focus.cn} /></div>}
+            <Near title="נשען ישירות על" links={parentsOf(id)} dir="up" />
+            <Near title="העביר ישירות אל" links={childrenOf(id)} dir="down" />
             {parallelsOf(id).length > 0 && <p className="small">במקביל: {parallelsOf(id).map((l) => nodeById.get(l.f === id ? l.t : l.f)!.t).join(', ')}</p>}
             <Distill kind="tree" id={id} context={context} label="זיקוק השושלת" />
             <a className="btn btn-line press" href={olamLink(focus)} target="_blank" rel="noopener">לרעיון בעולם נעלם</a>
@@ -167,7 +182,7 @@ function Near({ title, links, dir }: { title: string; links: Link[]; dir: 'up' |
         const o = nodeById.get(dir === 'up' ? l.f : l.t)!;
         return (
           <a key={l.id + o.id} className="near-item press" href={href('tree', { id: o.id })}>
-            <span className="near-top"><i style={{ background: sphereColor(o.s) }} /><b>{o.t}</b><small>{typeShort[l.ty]} · {confName[l.cf] || l.cf}</small></span>
+            <span className="near-top"><i style={{ background: sphereColor(o.s) }} /><b>{o.t}</b><small>{typePlain[l.ty]} · {confPlain[l.cf] || l.cf}</small></span>
             {l.ex && <Rich className="near-ex" text={l.ex} />}
           </a>
         );
@@ -180,7 +195,7 @@ function ListBlock({ title, items, gen }: { title: string; items: Node[]; gen: M
   if (!items.length) return null;
   return (
     <div className="lb">
-      <h3>{title} ({items.length})</h3>
+      <h3>{title === 'אבות' ? 'מה קדם לו' : 'מה נבנה עליו'} ({items.length})</h3>
       {[...items].sort((a, b) => (gen.get(a.id)! - gen.get(b.id)!) || a.y - b.y).map((n) => (
         <a key={n.id} className="lb-item press" href={href('tree', { id: n.id })}>
           <i style={{ background: sphereColor(n.s) }} /><span>{n.t}</span><small>דור {gen.get(n.id)} · {yearText(n.y)}</small>

@@ -1,6 +1,6 @@
 // טקסט עם ==מרקר== ו-**בולד**, כמו בעולם נעלם ובתקן הזיקוק.
 import { Fragment } from 'react';
-export default function Rich({ text, as: Tag = 'span', className }: { text: string; as?: 'span' | 'p' | 'div'; className?: string }) {
+export default function Rich({ text, as: Tag = 'span', className }: { text: string; as?: 'span' | 'p' | 'div' | 'h1'; className?: string }) {
   const parts = text.split(/(==[^=]+==|\*\*[^*]+\*\*)/g).filter(Boolean);
   return (
     <Tag className={className}>

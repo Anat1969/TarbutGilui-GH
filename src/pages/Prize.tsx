@@ -6,7 +6,10 @@ import Rich from '../components/Rich';
 import CultureChip from '../components/CultureChip';
 import ChainStrip from '../components/ChainStrip';
 import Distill from '../components/Distill';
-import { allPrizeChains, confName, domains, missingLinks, nobelLink, nodeById, olamLink, persons, plain, prizeKey, sphereById, sphereColor, typeShort, yearText } from '../lib/graph';
+import Term from '../components/Term';
+import Bottom, { HowTo, Lvl, Num } from '../components/Bottom';
+import { confPlain, typePlain } from '../lib/glossary';
+import { allPrizeChains, domains, missingLinks, nobelLink, nodeById, olamLink, persons, plain, prizeKey, sphereById, sphereColor, yearText } from '../lib/graph';
 
 const FIELDS = [['', 'הכול'], ['physics', 'פיזיקה'], ['chemistry', 'כימיה'], ['medicine', 'רפואה'], ['economics', 'כלכלה'], ['literature', 'ספרות'], ['peace', 'שלום']];
 const name = (s: string) => sphereById.get(s)?.he || s;
@@ -27,9 +30,13 @@ export default function PrizePage({ params }: { params: Record<string, string> }
   const gapB = lastBridge > 0 ? nodeById.get(cur.chain[lastBridge].id)! : null;
   const root = nodeById.get(cur.chain[0].id)!;
 
-  const insight = gapA && gapB
-    ? `==${cur.docSpan} מתוך ${cur.span.toLocaleString('he-IL')} השנים מתועדות.== החוליה החסרה הקרובה לפרס: בין **${gapA.who || gapA.t}** (${yearText(gapA.y)}) ל**${gapB.who || gapB.t}** (${yearText(gapB.y)}).`
-    : `==השרשרת מתועדת כולה.== מ**${root.who || root.t}** ועד הפרס, **${cur.steps}** חוליות.`;
+  const docTxt = docPct < 1 ? 'פחות מ-1%' : `${docPct}%`;
+  const rootN = root.who || root.t;
+  const main = `בדרך לנובל, הרעיון ==עבר ${cur.hand} פעמים== בין תרבויות.`;
+  const plainT = `השרשרת מתחילה ב**${rootN}** (${yearText(root.y)}) ונמשכת **${cur.span.toLocaleString('he-IL')} שנים**. **רק ${docTxt} מהדרך מוכחים במקור.** השאר הוא השערה, ומסומן באפור מקווקו.`;
+  const adopt = gapA && gapB
+    ? `**הקשר שהכי שווה לתעד: ${gapA.who || gapA.t} אל ${gapB.who || gapB.t}.** מקור אחד שיוכיח אותו יהפוך השערה לעובדה.`
+    : '**השרשרת מוכחת כולה.** אפשר לצטט אותה כעובדה, חוליה אחר חוליה.';
 
   const context = () => [
     `פרס: ${p.he}, נובל ב${p.fh} ${p.y}. נימוק: ${p.mh || p.m}.${p.via ? ` הזוכה הוא תלמיד של ${persons[p.via]?.he}.` : ''}`,
@@ -40,27 +47,29 @@ export default function PrizePage({ params }: { params: Record<string, string> }
 
   return (
     <div className="page prize-page">
-      <section className="qhead">
-        <div>
-          <p className="kicker">שרשרת עד הפרס</p>
-          <h1>מאיפה בא הרעיון של <mark>{p.he}</mark>?</h1>
-          <p className="sub">נובל ל{p.fh}, {p.y}{p.mh ? `: ${p.mh}` : ''}</p>
-        </div>
-        <div className="bignums">
-          <div className="bn"><b>{cur.span.toLocaleString('he-IL')}</b><span>שנים מהשורש לפרס</span></div>
-          <div className="bn"><b>{docPct}%</b><span>מהזמן מתועד בקשרים</span></div>
-          <div className="bn"><b>{cur.hand}</b><span>מעברים בין {cur.cultures.length} תרבויות</span></div>
-        </div>
-      </section>
+      <Bottom
+        kicker={<>שרשרת עד הפרס · מאיפה בא הרעיון של {p.he}?</>}
+        sub={<p className="sub">נובל ל{p.fh}, {p.y}{p.mh ? `: ${p.mh}` : ''}</p>}
+        main={main} plain={plainT} adopt={adopt}
+        nums={<>
+          <Num primary v={cur.hand}>פעמים שהרעיון <Term k="hand">עבר תרבות</Term></Num>
+          <Num v={cur.span.toLocaleString('he-IL')}>שנים מהשורש לפרס</Num>
+          <Num v={docTxt}>מהדרך <Term k="documented">מוכחת במקור</Term></Num>
+        </>}
+      />
+      <HowTo steps={[
+        '**הרצועה: הדרך מהשורש (ימין) עד נובל (שמאל).** כל נקודה היא גילוי, בצבע התרבות שלו.',
+        '**קו מלא: מוכח במקור. קו אפור מקווקו: השערה שלנו.** כך רואים כמה מהסיפור באמת ידוע.',
+        '**בחרו זוכה** ברשימה מימין. משמאל: הקשרים החסרים שכדאי לתעד.',
+      ]} />
 
       <section className="strip-wrap">
         <ChainStrip chain={cur.chain} endYear={p.y} />
-        <Rich as="p" className="insight" text={insight} />
         <div className="legend">
-          <span><i className="lg lg-doc" />חוליה מתועדת</span>
-          <span><i className="lg lg-bridge" />גשר תחום: הנחה</span>
+          <span><i className="lg lg-doc" /><Term k="documented">קשר מוכח במקור</Term></span>
+          <span><i className="lg lg-bridge" /><Term k="bridge">קפיצה משוערת: אין מקור</Term></span>
           <span><i className="lg lg-gold" />הפרס</span>
-          <span className="lg-sep">צבע הנקודה: התרבות</span>
+          <span className="lg-sep">צבע הנקודה: <Term k="culture">התרבות</Term></span>
         </div>
       </section>
 
@@ -70,7 +79,7 @@ export default function PrizePage({ params }: { params: Record<string, string> }
           <div className="seg seg-s">
             {FIELDS.map(([id, he]) => <a key={id} className={`seg-b press ${field === id ? 'on' : ''}`} href={href('prize', { f: id, p: params.p })}>{he}</a>)}
           </div>
-          <p className="hint">ממוין לפי אורך השרשרת. {list.length} פרסים.</p>
+          <p className="hint"><b>{list.length} פרסים</b>, מהשרשרת הארוכה לקצרה. המספר: שנים מהשורש.</p>
           <div className="plist-items">
             {list.map((c) => (
               <a key={prizeKey(c.prize)} className={`pitem press ${c === cur ? 'on' : ''}`} href={href('prize', { f: field, p: prizeKey(c.prize) })}>
@@ -81,7 +90,7 @@ export default function PrizePage({ params }: { params: Record<string, string> }
         </aside>
 
         <section className="chain" aria-label="השרשרת" data-testid="chain">
-          <h2 className="chart-t">החוליות, מהשורש עד הפרס</h2>
+          <h2 className="sec-h"><Lvl n={2} />צעד אחר צעד, מהשורש עד הפרס</h2>
           <ol className="steps">
             {cur.chain.map((st, i) => {
               const n = nodeById.get(st.id)!;
@@ -89,9 +98,9 @@ export default function PrizePage({ params }: { params: Record<string, string> }
                 <li key={st.id + i} className={`step k-${st.kind}`}>
                   {i > 0 && (
                     <div className={`joint j-${st.kind}`}>
-                      {st.kind === 'link' && st.link && <><span className="j-type">{typeShort[st.link.ty]} · {confName[st.link.cf] || st.link.cf}</span><Rich text={st.link.ex} /></>}
-                      {st.kind === 'self' && <span className="j-type">אותו אדם, גילוי מאוחר יותר</span>}
-                      {st.kind === 'bridge' && <span className="j-type">חוליה חסרה: אין קשר מתועד. גשר תחום ב{domains[n.d]?.he} <span className="tag tag-hyp">הנחה</span></span>}
+                      {st.kind === 'link' && st.link && <><span className="j-type">{typePlain[st.link.ty]} · {confPlain[st.link.cf] || st.link.cf}</span><Rich text={st.link.ex} /></>}
+                      {st.kind === 'self' && <span className="j-type">אותו אדם, גילוי מאוחר יותר שלו</span>}
+                      {st.kind === 'bridge' && <span className="j-type j-gap"><b>כאן חסר מקור.</b> חיברנו לגילוי הקרוב בזמן ב{domains[n.d]?.he}. <span className="tag tag-hyp">השערה</span></span>}
                     </div>
                   )}
                   <a className="card press" href={href('tree', { id: n.id })} style={{ borderInlineStartColor: sphereColor(n.s) }}>
@@ -104,7 +113,7 @@ export default function PrizePage({ params }: { params: Record<string, string> }
             })}
             {p.via && (
               <li className="step k-mentor">
-                <div className="joint j-link"><span className="j-type">הנחיה · ויקינתונים, דרך גמד על כתפי ענקים</span><span>{persons[p.via]?.he} הנחה את {p.he}.</span></div>
+                <div className="joint j-link"><span className="j-type">מורה ותלמיד · לפי ויקינתונים</span><span>{persons[p.via]?.he} הנחה את {p.he}.</span></div>
               </li>
             )}
             <li className="step k-prize">
@@ -117,14 +126,15 @@ export default function PrizePage({ params }: { params: Record<string, string> }
             </li>
           </ol>
           <Distill kind="prize" id={prizeKey(p)} context={context} label="זיקוק השרשרת" />
-          {firstBridge > 0 && <p className="small">החוליה המתועדת הקרובה לפרס מתחילה ב-{yearText(nodeById.get(cur.chain[lastBridge].id)!.y)}. לפניה {cur.bridges === 1 ? 'גשר אחד' : `${cur.bridges} גשרים`}.</p>}
+          {firstBridge > 0 && <p className="small"><b>החלק המוכח הקרוב לפרס מתחיל ב-{yearText(nodeById.get(cur.chain[lastBridge].id)!.y)}.</b> לפניו {cur.bridges === 1 ? 'קפיצה משוערת אחת' : `${cur.bridges} קפיצות משוערות`}.</p>}
           <a className="btn btn-line press" href={olamLink(root)} target="_blank" rel="noopener">לשורש בעולם נעלם</a>
         </section>
 
         <aside className="side" aria-label="החוליות החסרות">
           <div className="side-card">
-            <h2>החוליות החסרות</h2>
-            <p className="small">קשר אחד שיתועד בעולם נעלם יסגור את כל השרשראות שעוברות בו. ממוין לפי כמה פרסים הוא סוגר.</p>
+            <Lvl n={3} />
+            <h2>הקשרים החסרים</h2>
+            <p className="small"><b>אלה קשרים בין גילויים שעדיין אין להם מקור.</b> תיעוד של קשר אחד מחזק את כל השרשראות שעוברות בו. המספר הגדול: כמה שרשראות.</p>
             <ol className="miss" data-testid="missing">
               {miss.slice(0, 8).map((m) => {
                 const a = nodeById.get(m.from)!, b = nodeById.get(m.to)!;
@@ -137,7 +147,7 @@ export default function PrizePage({ params }: { params: Record<string, string> }
                 );
               })}
             </ol>
-            <Rich as="p" className="insight" text={`==${miss.length} חוליות חסרות.== שלוש הראשונות סוגרות **${new Set(miss.slice(0, 3).flatMap((m) => m.prizes.map(prizeKey))).size}** שרשראות. זה סדר העבודה לתיעוד בעולם נעלם.`} />
+            <Rich as="p" className="insight" text={`==שלושה מקורות יחזקו ${new Set(miss.slice(0, 3).flatMap((m) => m.prizes.map(prizeKey))).size} שרשראות.== מתוך **${miss.length}** קשרים חסרים. זה סדר העבודה המומלץ לתיעוד.`} />
           </div>
         </aside>
       </div>

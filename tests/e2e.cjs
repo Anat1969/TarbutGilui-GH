@@ -40,13 +40,13 @@ async function page(b, opts = {}) {
   // עץ
   await p.click('[data-testid=door-tree]');
   await p.waitForSelector('[data-testid=tree-canvas] .node');
-  const h1 = await p.locator('h1').innerText();
+  const h1 = await p.locator('.bottom .kicker').innerText();
   ok(h1.includes('ממי ירש'), 'tree: question title');
   const nodes = await p.locator('[data-testid=tree-canvas] .node').count();
   ok(nodes > 5, `tree: graph has ${nodes} nodes`);
   await p.locator('[data-testid=tree-canvas] .node:not(.focus)').first().click();
   await p.waitForTimeout(300);
-  ok((await p.locator('h1').innerText()) !== h1, 'tree: clicking a node re-centers the tree');
+  ok((await p.locator('.bottom .kicker').innerText()) !== h1, 'tree: clicking a node re-centers the tree');
   await p.fill('[data-testid=tree-search]', 'ניוטון');
   ok((await p.locator('.pick').count()) > 0, 'tree: search finds Newton');
   await p.locator('.pick').first().click();
@@ -56,6 +56,19 @@ async function page(b, opts = {}) {
   await p.waitForSelector('.distill-out');
   ok(calls.length === 1 && calls[0].kind === 'tree' && calls[0].context.includes('רעיון במרכז'), 'tree: distill sends lineage to the AI function');
   ok(await p.locator('.d-insight b').isVisible(), 'tree: distilled insight rendered with emphasis');
+
+  // ריצוד: ריחוף על כרטיס בעץ לא מזיז אותו (ההזזה דרסה את המיקום ב-SVG והכרטיס קפץ)
+  const nd = p.locator('[data-testid=tree-canvas] .node:not(.focus)').first();
+  const b0 = await nd.boundingBox();
+  await nd.hover(); await p.waitForTimeout(300);
+  const b1 = await nd.boundingBox();
+  ok(Math.abs(b0.x - b1.x) < 1 && Math.abs(b0.y - b1.y) < 1, 'tree: hovering a node does not move it (no flicker)');
+  // מהסוף להתחלה: העיקר, בפשטות, מה לקחת מזה, ואיך קוראים
+  ok(await p.locator('.bottom .b-main').isVisible() && await p.locator('.bottom .b-adopt').isVisible(), 'tree: bottom line and the insight to adopt');
+  ok((await p.locator('.howto li').count()) >= 3, 'tree: how to read the screen, in steps');
+  const term = p.locator('.bignums .term').first();
+  await term.hover(); await p.waitForTimeout(250);
+  ok(await term.locator('.term-pop').isVisible(), 'tree: a term explains itself on hover');
 
   // תרבות
   await p.click('nav >> text=תרבות כמנוע');
@@ -85,7 +98,7 @@ async function page(b, opts = {}) {
   await p.waitForTimeout(150);
   await p.locator('.pitem').first().click();
   await p.waitForTimeout(200);
-  ok((await p.locator('h1').innerText()).includes('קירי'), 'prize: picking Curie');
+  ok((await p.locator('.bottom .kicker').innerText()).includes('קירי'), 'prize: picking Curie');
   await p.click('.seg >> text=רפואה');
   ok((await p.url()).includes('f=medicine'), 'prize: field filter');
   await p.click('[data-testid=distill-btn]');
