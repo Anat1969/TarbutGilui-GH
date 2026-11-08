@@ -6,6 +6,7 @@ import Culture from './pages/Culture';
 import PrizePage from './pages/Prize';
 import Sources from './pages/Sources';
 import Creations from './pages/Creations';
+import Posts from './pages/Posts';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -26,7 +27,8 @@ export default function App() {
   const { page, params } = useRoute();
   useEffect(() => {
     const t = TABS.find((x) => x.page === page);
-    document.title = t ? `${t.label} · תרבות וגילוי` : page === 'creations' ? 'יצירות · תרבות וגילוי' : 'תרבות וגילוי';
+    const x = page === 'creations' ? 'יצירות' : page === 'posts' ? 'פוסטים' : page === 'sources' ? 'מקורות ומילון' : '';
+    document.title = t ? `${t.label} · תרבות וגילוי` : x ? `${x} · תרבות וגילוי` : 'תרבות וגילוי';
   }, [page]);
   return (
     <>
@@ -42,15 +44,17 @@ export default function App() {
             </a>
           ))}
         </nav>
+        <a className={`tab tab-x press ${page === 'posts' ? 'on' : ''}`} href={href('posts')} aria-current={page === 'posts' ? 'page' : undefined}><span className="tab-label">פוסטים</span></a>
         <a className={`tab tab-x press ${page === 'creations' ? 'on' : ''}`} href={href('creations')} aria-current={page === 'creations' ? 'page' : undefined}><span className="tab-label">יצירות</span></a>
         <ai-menu chat="https://claude.ai/code/session_01UBnSCLEXTFFki8uZJHBiao"></ai-menu>
       </header>
-      <main className="main" key={page}>
+      <main className={`main ${page === 'home' ? 'is-home' : ''}`} key={page}>
         {page === 'tree' ? <Tree params={params} />
           : page === 'culture' ? <Culture params={params} />
           : page === 'prize' ? <PrizePage params={params} />
           : page === 'sources' ? <Sources />
           : page === 'creations' ? <Creations />
+          : page === 'posts' ? <Posts params={params} />
           : <Home />}
       </main>
     </>

@@ -1,21 +1,20 @@
 // מקורות ושיטה: מאיפה כל נתון, ומה עובדה, מה פרשנות ומה הנחה.
 import { GLOSSARY } from '../lib/glossary';
-import { Lvl } from '../components/Bottom';
 import { meta, nodes, links, prizes, spheres, sphereColor } from '../lib/graph';
 export default function Sources() {
   const byS = (id: string) => nodes.filter((n) => n.s === id).length;
   return (
     <div className="page sources-page">
-      <section className="bottom"><div className="bottom-text"><p className="kicker"><Lvl n={1} /><span>מקורות, שיטה ומילון</span></p><h1 className="b-main">כל טענה כאן מסומנת: <mark>עובדה, פרשנות או השערה.</mark></h1><p className="b-plain"><b>ירוק: יש מקור.</b> כתום: קריאה סבירה של הנתונים. <b>אפור מקווקו: השערה שלנו</b>, כדי שאף פעם לא תתבלבל עם עובדה.</p></div></section>
+      <section className="bottom"><div className="bottom-text"><p className="kicker">מקורות, שיטה ומילון</p><h1 className="b-main">כל טענה כאן מסומנת: <mark>עובדה, פרשנות או השערה.</mark></h1><p className="b-plain"><span className="line"><b>ירוק: יש מקור.</b></span><span className="line">כתום: קריאה סבירה של הנתונים.</span><span className="line"><b>אפור מקווקו: השערה שלנו</b>, כדי שלא תתבלבל עם עובדה.</span></p></div></section>
       <section className="gloss" aria-label="מילון המונחים">
-        <h2 className="sec-h"><Lvl n={2} />מילון: כל מונח במילים פשוטות</h2>
+        <h2 className="sec-h">מילון: כל מונח במילים פשוטות</h2>
         <dl className="gloss-grid">
           {Object.entries(GLOSSARY).map(([k, g]) => (
             <div key={k} className="gloss-item"><dt><b>{g.he}</b>{g.pro && <small>במונחי המחקר: {g.pro}</small>}</dt><dd>{g.def}</dd></div>
           ))}
         </dl>
       </section>
-      <h2 className="sec-h"><Lvl n={3} />השיטה, להעמקה</h2>
+      <h2 className="sec-h">השיטה, להעמקה</h2>
       <div className="src-grid">
         <section>
           <h2>שלוש אפליקציות המקור</h2>
