@@ -39,6 +39,7 @@ code { font-family: ui-monospace, monospace; font-size: .85em; background: var(-
 .tab { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 7px 10px; border-radius: var(--r); background: transparent; }
 .tab:hover { background: var(--soft); box-shadow: none; }
 .tab.on { background: var(--ink); color: #fff; }
+.tab-x { padding: 10px 14px; }
 .tab-label { font: 700 15px/1.15 var(--sans); }
 .tab-q { font: 400 12px/1.2 var(--sans); opacity: .7; }
 ai-menu { margin-inline-start: auto; }
@@ -269,6 +270,7 @@ ai-menu { margin-inline-start: auto; }
   .tabs { order: 3; width: 100%; max-width: none; }
   .tab-q { display: none; }
   .tab-label { font-size: 13.5px; text-align: center; }
+  .tab-x { padding: 6px 10px; }
   .page, .home { padding: 0 14px 30px; }
   .bignums { grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
   .doors, .sister-row, .src-grid { grid-template-columns: 1fr; }

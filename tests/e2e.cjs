@@ -10,6 +10,9 @@ async function page(b, opts = {}) {
   const p = await ctx.newPage();
   const calls = [];
   await p.route('https://appofapp-gh.vercel.app/ai-menu.js', (r) => r.fulfill({ contentType: 'text/javascript', body: MENU }));
+  const CR = require('fs').existsSync(__dirname + '/.creations-stub.js') ? require('fs').readFileSync(__dirname + '/.creations-stub.js', 'utf8') : "customElements.define('app-creations', class extends HTMLElement { connectedCallback() { this.innerHTML = '<p class=cr-stub>creations</p>'; } });";
+  await p.route('**/AppOfApp-GH/creations.js', (r) => r.fulfill({ contentType: 'text/javascript', body: CR }));
+  await p.route('https://appofapp-gh.vercel.app/creations.js', (r) => r.fulfill({ contentType: 'text/javascript', body: CR }));
   await p.route('https://fonts.googleapis.com/**', (r) => r.fulfill({ contentType: 'text/css', body: '' }));
   await p.route('https://upload.wikimedia.org/**', (r) => r.abort());
   await p.route('https://thumb.wikimedia.org/**', (r) => r.abort());
@@ -93,6 +96,15 @@ async function page(b, opts = {}) {
   await p.reload();
   await p.waitForSelector('.distill-out');
   ok(true, 'distilled text persists after reload');
+
+  // יצירות
+  await p.click('header >> text=יצירות');
+  await p.waitForTimeout(1200);
+  ok((await p.url()).includes('#/creations'), 'creations: tab in the bar');
+  ok(await p.locator('app-creations').count() === 1, 'creations: <app-creations> on the page');
+  const cj = await (await p.request.get(base + 'creations.json')).json();
+  ok(cj.topics.length >= 6 && ['ידע', 'הבנה', 'יישום'].every((z) => cj.topics.some((t) => t.zone === z)), `creations.json: ${cj.topics.length} rooms in all three zones`);
+  ok(cj.topics.every((t) => t.creations.length >= 4 && t.creations.length <= 6 && new Set(t.creations.map((c) => c.style)).size === t.creations.length), 'creations.json: 4-6 creations per room, no style repeats');
 
   // מקורות
   await p.goto(base + '#/sources');

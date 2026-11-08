@@ -9,7 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "build:github": "vite build --base=./ --outDir app --emptyOutDir",
     "preview": "vite preview --port 4173",
-    "test": "node tests/e2e.cjs"
+    "test": "node tests/e2e.cjs",
+    "creations": "esbuild scripts/creations.ts --bundle --platform=node --format=esm --loader:.json=json --outfile=scripts/.creations.mjs --log-level=error && node scripts/.creations.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

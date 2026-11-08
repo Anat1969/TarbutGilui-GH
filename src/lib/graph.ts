@@ -5,7 +5,7 @@ import raw from '../data/graph.json';
 export type LinkType = 'influenced' | 'enabled' | 'opposed' | 'parallel';
 export type Node = {
   id: string; t: string; y: number; y2: number; ya: boolean; d: string; pp: string[]; who: string;
-  pl: string | null; co: string | null; s: string; sx: 'place' | 'birth' | 'none'; cf: string; nv: string; cn: string; img: string | null;
+  pl: string | null; co: string | null; s: string; sx: 'place' | 'birth' | 'none'; cf: string; nv: string; cn: string; img: string | null; ic?: string | null;
 };
 export type Link = { id: string; f: string; t: string; ty: LinkType; cf: string; ex: string; ap: string; vp: boolean };
 export type Sphere = {

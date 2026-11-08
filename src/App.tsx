@@ -5,10 +5,14 @@ import Tree from './pages/Tree';
 import Culture from './pages/Culture';
 import PrizePage from './pages/Prize';
 import Sources from './pages/Sources';
+import Creations from './pages/Creations';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace JSX { interface IntrinsicElements { 'ai-menu': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { chat?: string } } }
+  namespace JSX { interface IntrinsicElements {
+    'ai-menu': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { chat?: string };
+    'app-creations': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { src?: string; heading?: string };
+  } }
 }
 
 // שלוש השאלות הן המבנה: כל לשונית היא שאלה של המשתמש.
@@ -22,7 +26,7 @@ export default function App() {
   const { page, params } = useRoute();
   useEffect(() => {
     const t = TABS.find((x) => x.page === page);
-    document.title = t ? `${t.label} · תרבות וגילוי` : 'תרבות וגילוי';
+    document.title = t ? `${t.label} · תרבות וגילוי` : page === 'creations' ? 'יצירות · תרבות וגילוי' : 'תרבות וגילוי';
   }, [page]);
   return (
     <>
@@ -38,6 +42,7 @@ export default function App() {
             </a>
           ))}
         </nav>
+        <a className={`tab tab-x press ${page === 'creations' ? 'on' : ''}`} href={href('creations')} aria-current={page === 'creations' ? 'page' : undefined}><span className="tab-label">יצירות</span></a>
         <ai-menu chat="https://claude.ai/code/session_01UBnSCLEXTFFki8uZJHBiao"></ai-menu>
       </header>
       <main className="main" key={page}>
@@ -45,6 +50,7 @@ export default function App() {
           : page === 'culture' ? <Culture params={params} />
           : page === 'prize' ? <PrizePage params={params} />
           : page === 'sources' ? <Sources />
+          : page === 'creations' ? <Creations />
           : <Home />}
       </main>
     </>

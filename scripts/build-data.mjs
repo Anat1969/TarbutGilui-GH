@@ -56,7 +56,7 @@ const nodes = disc.discoveries.map((d) => {
     d: d.domainId, pp: d.personIds || [], who: pname.join(', '),
     pl: pl?.nameHe || pl?.city?.nameHe || null, co, s: sphereOf(co, d.yearFrom), sx,
     cf: d.confidence, nv: d.novelty || '', cn: d.contribution || '',
-    img: d.workImage?.url || null,
+    img: d.workImage?.url || null, ic: d.workImage ? `${d.workImage.article ? d.workImage.article + ' · ' : ''}${[d.workImage.credit, d.workImage.license].filter(Boolean).join(', ')}. ויקישיתוף` : null,
   };
 });
 const byId = new Map(nodes.map((n) => [n.id, n]));
