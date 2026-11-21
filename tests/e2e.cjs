@@ -36,7 +36,7 @@ async function page(b, opts = {}) {
   // דף הבית: כרזה מזוקקת
   ok(await p.locator('.poster-h').isVisible(), 'home: one sentence poster');
   ok(await p.locator('.poster .strip-anim').isVisible(), 'home: evolving chain');
-  ok((await p.locator('.pdoor').count()) === 3, 'home: three questions');
+  ok((await p.locator('.pdoor').count()) === 4, 'home: four questions');
   ok((await p.locator('.poster .door-n, .poster .bn').count()) === 0, 'home: no bare numbers');
   const s1 = await p.locator('.poster-story b').first().innerText();
   await p.click('[data-testid=another]'); await p.waitForTimeout(200);
@@ -113,6 +113,25 @@ async function page(b, opts = {}) {
   ok((await p.locator('[data-testid=missing] li').count()) >= 5, 'prize: missing links in stage 3');
 
   // פוסטים
+  // מכשירים
+  await p.click('nav >> text=מכשירים');
+  await p.waitForSelector('[data-testid=matrix] .mx-row');
+  ok(await p.locator('.b-main').isVisible() && await p.locator('.story-num').isVisible(), 'tools: stage 1 has the conclusion and one number');
+  ok((await p.locator('[data-testid=matrix] .mx-row').count()) === 22, 'tools: 21 instruments and a header row');
+  ok((await p.locator('[data-testid=matrix] .mx-gold').count()) > 20, 'tools: gold cells for Nobel prizes');
+  await p.locator('[data-testid=matrix] .mx-idea').first().click();
+  await p.waitForSelector('[data-testid=tool-card]');
+  ok((await p.url()).includes('#/tools?t=') && (await p.url()).includes('l=2'), 'tools: a cell opens stage 2 with the link');
+  ok(await p.locator('.t-idea.hit').isVisible(), 'tools: the chosen proposal is marked');
+  ok((await p.locator('[data-testid=tool-card] .t-gold').count()) >= 1, 'tools: prizes listed from Nobel data');
+  ok((await p.locator('[data-testid=matrix]').count()) === 0, 'tools: only the current stage on screen');
+  await p.click('[data-testid=tool-search-open]'); await p.fill('[data-testid=tool-search]', 'לדייק אור'); await p.waitForTimeout(150);
+  await p.locator('.pick-opt').first().click(); await p.waitForTimeout(250);
+  ok((await p.locator('[data-testid=tool-card] h2').innerText()).includes('לייזר'), 'tools: single pick switches instrument');
+  await p.click('[data-testid=next-stage]'); await p.waitForSelector('[data-testid=method]');
+  ok((await p.locator('[data-testid=method] li').count()) === 5, 'tools: five steps of the method');
+  ok(await p.locator('.post-rel .post-li').first().isVisible(), 'tools: linked post');
+
   await p.click('header >> text=פוסטים'); await p.waitForSelector('[data-testid=post]');
   ok((await p.locator('.post-li').count()) >= 6, 'posts: written ahead, listed');
   ok(await p.locator('.haiku').isVisible() && await p.locator('.post .b-adopt').isVisible(), 'posts: haiku and insight');
@@ -143,7 +162,7 @@ async function page(b, opts = {}) {
 
   // נייד והפחתת תנועה
   const m = await page(b, { viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
-  for (const h of ['#/', '#/tree', '#/culture', '#/prize', '#/sources', '#/posts', '#/tree?l=2', '#/prize?l=3']) {
+  for (const h of ['#/', '#/tree', '#/culture', '#/prize', '#/sources', '#/posts', '#/tree?l=2', '#/prize?l=3', '#/tools', '#/tools?l=2', '#/tools?l=3']) {
     await m.p.goto(base + h); await m.p.waitForTimeout(400);
     const w = await m.p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     ok(w <= 1, `mobile ${h}: no horizontal scroll (${w})`);
