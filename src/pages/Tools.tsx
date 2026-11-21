@@ -178,6 +178,7 @@ export default function Tools({ params }: { params: Record<string, string> }) {
             <section>
               <p className="haiku"><span>עדשה אחת.</span><span>מה שלא היה שם</span><span>נהיה מקום.</span></p>
               <PostLinks page="tools" />
+              <a className="btn btn-line press" href={href('articles')} data-testid="to-articles">שש כתבות בעקבות המכשירים</a>
             </section>
           </div>
           <NextStage l={l} to={to} label="" />

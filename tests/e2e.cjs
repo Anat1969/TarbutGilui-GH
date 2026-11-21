@@ -139,6 +139,23 @@ async function page(b, opts = {}) {
   ok(await p.locator('[data-testid=planning] .pv-gold').first().isVisible() && await p.locator('[data-testid=planning] .pv-idea').isVisible(), 'tools: planning verbs show prize, crossing and proposal');
   ok(await p.locator('.post-rel .post-li').first().isVisible(), 'tools: linked post');
 
+  // כתבות
+  await p.click('header >> text=כתבות'); await p.waitForSelector('[data-testid=articles] .art-card');
+  ok((await p.locator('.art-card').count()) === 6, 'articles: six articles listed, tab in the bar');
+  await p.locator('.art-card').nth(1).click(); await p.waitForSelector('[data-testid=article]');
+  ok((await p.url()).includes('#/articles?id='), 'articles: one article by link');
+  ok((await p.locator('.pg').count()) === 6 && (await p.locator('.ch-insight').count()) === 3, 'articles: six pages, an insight closing each chapter');
+  ok((await p.locator('.steps li').count()) === 3 && await p.locator('.ask-big').isVisible(), 'articles: numbered steps and a question to the reader');
+  const bg = await p.evaluate(() => [...document.querySelectorAll('.pg')].map((e) => getComputedStyle(e).backgroundColor));
+  ok(bg[0] === 'rgb(255, 255, 255)' && bg[5] === 'rgb(19, 19, 19)', 'articles: pages run from light to dark');
+  ok(!(await p.locator('.mag').innerText()).includes('{'), 'articles: no unfilled placeholders');
+  for (const [ext, magic] of [['pdf', '%PDF'], ['docx', 'PK']]) {
+    const body = (await (await p.request.get(base + 'articles/pyramid.' + ext)).body()).toString('latin1');
+    ok(body.startsWith(magic), `articles: a real ${ext} file is served`);
+  }
+  await p.goto(base + '#/articles?id=see-through'); await p.waitForSelector('.cover-fig img');
+  ok(await p.evaluate(() => { const i = document.querySelector('.cover-fig img'); return i.complete && i.naturalWidth > 0 && new URL(i.src).origin === location.origin; }), 'articles: cover image is local and loads');
+
   await p.click('header >> text=פוסטים'); await p.waitForSelector('[data-testid=post]');
   ok((await p.locator('.post-li').count()) >= 6, 'posts: written ahead, listed');
   ok(await p.locator('.haiku').isVisible() && await p.locator('.post .b-adopt').isVisible(), 'posts: haiku and insight');
@@ -169,7 +186,7 @@ async function page(b, opts = {}) {
 
   // נייד והפחתת תנועה
   const m = await page(b, { viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
-  for (const h of ['#/', '#/tree', '#/culture', '#/prize', '#/sources', '#/posts', '#/tree?l=2', '#/prize?l=3', '#/tools', '#/tools?b=weak', '#/tools?l=2', '#/tools?l=3']) {
+  for (const h of ['#/', '#/tree', '#/culture', '#/prize', '#/sources', '#/posts', '#/tree?l=2', '#/prize?l=3', '#/articles', '#/articles?id=section', '#/tools', '#/tools?b=weak', '#/tools?l=2', '#/tools?l=3']) {
     await m.p.goto(base + h); await m.p.waitForTimeout(400);
     const w = await m.p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     ok(w <= 1, `mobile ${h}: no horizontal scroll (${w})`);

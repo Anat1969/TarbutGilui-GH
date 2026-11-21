@@ -37,7 +37,7 @@ export default function Home() {
         <a className="pdoor" href={href('prize')} data-testid="door-prize"><b>כמה רחוק הפרס מהשורש?</b><span>שרשרת עד הפרס</span></a>
         <a className="pdoor" href={href('tools')} data-testid="door-tools"><b>איזה מכשיר פתח את העין?</b><span>מכשירים</span></a>
       </nav>
-      <p className="poster-foot"><a href={href('posts')}>פוסטים</a> · <a href={href('sources')}>מקורות ומילון</a> · <a href={href('creations')}>יצירות</a></p>
+      <p className="poster-foot"><a href={href('articles')}>כתבות</a> · <a href={href('posts')}>פוסטים</a> · <a href={href('sources')}>מקורות ומילון</a> · <a href={href('creations')}>יצירות</a></p>
     </div>
   );
 }
