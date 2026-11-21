@@ -6,7 +6,7 @@ import Rich from '../components/Rich';
 import Pick from '../components/Pick';
 import Bottom, { NextStage, PageHead, Stepper, stageOf } from '../components/Bottom';
 import { PostLinks } from './Posts';
-import { awards, fieldHe, fields, method, coverage, planning, type Src, toolList as list, toolStats as stats, type Instrument } from '../lib/tools';
+import { awards, fieldHe, fields, method, coverage, planning, blind, type Src, toolList as list, toolStats as stats, type Instrument } from '../lib/tools';
 
 const NOBEL = 'https://prasnovel-gh.vercel.app/#/people?id=';
 type Cell = { kind: 'gold' | 'done' | 'idea' | 'none'; n: number };
@@ -27,6 +27,8 @@ export default function Tools({ params }: { params: Record<string, string> }) {
   const sel = list.find((i) => i.id === params.t) || list.find((i) => i.id === 'xray') || list[0];
   const fsel = fields.some((f) => f.id === params.f) ? params.f : '';
   const to = (n: number) => href('tools', { t: params.t, f: params.f, l: String(n) });
+  const bsel = blind.some((b) => b.id === params.b) ? params.b : '';
+  const answers = bsel ? [...list.filter((i) => i.b === bsel).map((i) => ({ id: i.id, verb: i.verb, by: i.he, plan: false })), ...planning.filter((v) => v.b === bsel).map((v) => ({ id: v.id, verb: v.verb, by: v.tool, plan: true }))] : [];
   const years = `${sel.prizes[0].y}–${sel.prizes[sel.prizes.length - 1].y}`;
 
   return (
@@ -47,6 +49,21 @@ export default function Tools({ params }: { params: Record<string, string> }) {
             adopt="**לא שואלים איזה מכשיר חסר לי.** שואלים מה אצלי שקוף, מהיר, חלש, מעורבב או קבור, ומשם בוחרים פועל."
             num={{ v: stats.ideas, story: '**הצעות מעבר** לתחום שהמכשיר עוד לא הגיע אליו. כולן השערה, עד שייבדקו.' }}
           />
+          <section className="ask" data-testid="ask" aria-label="מה אצלך לא נראה">
+            <h2 className="ask-q">ומה אצלך לא נראה? <small>בחרי סיבה, ותקבלי את הפעלים שעונים עליה.</small></h2>
+            <div className="ask-row" role="group" aria-label="למה זה לא נראה">
+              {blind.map((b) => <a key={b.id} className={`ask-b press ${bsel === b.id ? 'on' : ''}`} href={href('tools', { t: params.t, b: bsel === b.id ? undefined : b.id })} aria-pressed={bsel === b.id}>{b.he}</a>)}
+            </div>
+            {bsel && (
+              <div className="ask-a" data-testid="ask-answers">
+                {answers.map((a) => (
+                  <a key={a.id} className={`ask-v press ${a.plan ? 'ask-plan' : ''}`} href={a.plan ? href('tools', { l: '3' }) : href('tools', { t: a.id, l: '2' })}>
+                    <b>{a.verb}</b><small>{a.by}{a.plan ? ' · פועל של התכנון' : ''}</small>
+                  </a>
+                ))}
+              </div>
+            )}
+          </section>
           <section className="canvas-wrap">
             <div className="mx" data-testid="matrix" role="table" aria-label="מכשירים מול תחומים">
               <div className="mx-row mx-head" role="row">
@@ -54,7 +71,7 @@ export default function Tools({ params }: { params: Record<string, string> }) {
                 {fields.map((f, k) => <span key={f.id} role="columnheader" className={`mx-h ${k === 4 ? 'mx-gap' : ''}`}><em>{f.he}</em></span>)}
               </div>
               {list.map((i, r) => (
-                <div key={i.id} className={`mx-row grow ${i.id === sel.id ? 'on' : ''}`} role="row" style={{ '--d': `${(r * 0.04).toFixed(2)}s` } as React.CSSProperties}>
+                <div key={i.id} className={`mx-row grow ${i.id === sel.id ? 'on' : ''} ${bsel && i.b !== bsel ? 'dim' : ''}`} role="row" style={{ '--d': `${(r * 0.04).toFixed(2)}s` } as React.CSSProperties}>
                   <a className="mx-name" role="rowheader" href={href('tools', { t: i.id, l: '2' })}><b>{i.he}</b><small>{i.verb}</small></a>
                   {fields.map((f, k) => {
                     const c = cell(i, f.id);

@@ -119,6 +119,11 @@ async function page(b, opts = {}) {
   ok(await p.locator('.b-main').isVisible() && await p.locator('.story-num').isVisible(), 'tools: stage 1 has the conclusion and one number');
   ok((await p.locator('[data-testid=matrix] .mx-row').count()) === 22, 'tools: 21 instruments and a header row');
   ok((await p.locator('[data-testid=matrix] .mx-gold').count()) > 20, 'tools: gold cells for Nobel prizes');
+  await p.click('[data-testid=ask] >> text=סגור'); await p.waitForSelector('[data-testid=ask-answers]');
+  ok((await p.url()).includes('b=closed'), 'tools: the opening question keeps its choice in the link');
+  ok((await p.locator('[data-testid=ask-answers] .ask-v').count()) === 3 && (await p.locator('[data-testid=ask-answers] .ask-plan').count()) === 1, 'tools: "closed" is answered by two instruments and one planning verb');
+  ok((await p.locator('[data-testid=matrix] .mx-row.dim').count()) === 19, 'tools: other instruments fade');
+  await p.click('[data-testid=ask] >> text=סגור'); await p.waitForTimeout(150);
   await p.locator('[data-testid=matrix] .mx-idea').first().click();
   await p.waitForSelector('[data-testid=tool-card]');
   ok((await p.url()).includes('#/tools?t=') && (await p.url()).includes('l=2'), 'tools: a cell opens stage 2 with the link');
@@ -164,7 +169,7 @@ async function page(b, opts = {}) {
 
   // נייד והפחתת תנועה
   const m = await page(b, { viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
-  for (const h of ['#/', '#/tree', '#/culture', '#/prize', '#/sources', '#/posts', '#/tree?l=2', '#/prize?l=3', '#/tools', '#/tools?l=2', '#/tools?l=3']) {
+  for (const h of ['#/', '#/tree', '#/culture', '#/prize', '#/sources', '#/posts', '#/tree?l=2', '#/prize?l=3', '#/tools', '#/tools?b=weak', '#/tools?l=2', '#/tools?l=3']) {
     await m.p.goto(base + h); await m.p.waitForTimeout(400);
     const w = await m.p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     ok(w <= 1, `mobile ${h}: no horizontal scroll (${w})`);

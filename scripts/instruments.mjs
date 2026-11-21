@@ -3,7 +3,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { FIELDS, INSTRUMENTS, METHOD, HE_FIX, PLANNING } from './instruments.config.mjs';
+import { FIELDS, INSTRUMENTS, METHOD, HE_FIX, PLANNING, BLIND, BLIND_OF } from './instruments.config.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = process.env.SRC;
@@ -22,6 +22,8 @@ const errors = [];
 const srcPath = join(root, 'scripts/instruments.sources.json');
 const sources = existsSync(srcPath) ? JSON.parse(readFileSync(srcPath, 'utf8')) : {};
 const src = (id) => (sources[id] ? { url: sources[id].url, by: sources[id].source } : null);
+const blindIds = new Set(BLIND.map((b) => b.id));
+const blindOf = (id) => { const b = BLIND_OF[id]; if (!blindIds.has(b)) errors.push(`${id}: אין עיוורון מוגדר`); return b; };
 const resolve = (owner, list) => list.map(([y, name, role]) => {
   const hits = nobel.prizes.filter((p) => p.y === y && people.get(p.id)?.en.includes(name));
   if (hits.length !== 1) { errors.push(`${owner}: ${name} ${y} נמצא ${hits.length} פעמים בנתוני נובל`); return null; }
@@ -38,7 +40,7 @@ const out = INSTRUMENTS.map((ins) => {
   const prizes = resolve(ins.id, ins.prizes);
   const node = ins.node ? graph.nodes.find((n) => n.id === ins.node) : null;
   return {
-    id: ins.id, he: ins.he, verb: ins.verb, see: ins.see, shift: ins.shift,
+    id: ins.id, b: blindOf(ins.id), he: ins.he, verb: ins.verb, see: ins.see, shift: ins.shift,
     node: node ? { id: node.id, t: node.t, y: node.y } : null,
     prizes, crossed: ins.crossed.map((c) => ({ ...c, src: src(`${ins.id}:${c.f}`) })), ideas: ins.ideas,
   };
@@ -51,13 +53,13 @@ const key = (p) => `${p.y}-${p.f}`;
 const sciAll = new Set(nobel.prizes.filter((p) => ['physics', 'chemistry', 'medicine'].includes(p.f)).map((p) => `${p.y}-${FMAP[p.f]}`));
 const sciIn = new Set(out.flatMap((i) => i.prizes).filter((p) => p.f !== 'econ').map(key));
 const planning = PLANNING.map((v) => ({
-  id: v.id, verb: v.verb, blind: v.blind, tool: v.tool, origin: v.origin, osrc: v.osrc ? src(v.osrc) : null,
+  id: v.id, b: blindOf(v.id), verb: v.verb, blind: v.blind, tool: v.tool, origin: v.origin, osrc: v.osrc ? src(v.osrc) : null,
   sci: { state: v.sci.state, t: v.sci.t, src: v.sci.src ? src(v.sci.src) : null }, prizes: resolve(v.id, v.prizes),
 }));
 if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
 const data = {
   built: new Date().toISOString().slice(0, 10),
-  fields: FIELDS, method: METHOD, instruments: out, planning,
+  fields: FIELDS, method: METHOD, instruments: out, planning, blind: BLIND,
   coverage: { inList: sciIn.size, all: sciAll.size },
 };
 writeFileSync(join(root, 'src/data/instruments.json'), JSON.stringify(data));
