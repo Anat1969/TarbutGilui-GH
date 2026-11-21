@@ -7,6 +7,7 @@
     "dev": "vite",
     "data": "node scripts/build-data.mjs",
     "instruments": "node scripts/instruments.mjs",
+    "articles": "node scripts/articles-pdf.cjs && python3 scripts/articles_docx.py",
     "build": "tsc --noEmit && vite build",
     "build:github": "vite build --base=./ --outDir app --emptyOutDir",
     "preview": "vite preview --port 4173",
