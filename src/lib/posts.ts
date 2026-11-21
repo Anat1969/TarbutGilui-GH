@@ -1,7 +1,7 @@
 // פוסטים: מה שכפתור הזיקוק היה כותב לפי בקשה, כתוב מראש ושמור.
 // כל מספר מחושב מהגרף, כך שרענון נתונים מעדכן את הפוסט. עובדה, פרשנות והשערה מסומנות בנפרד.
 // ציטוט רק כשהוא מאומת. הייקו: מקורי.
-import { coverage, toolList, toolStats } from './tools';
+import { coverage, planning, toolList, toolStats } from './tools';
 import { allPrizeChains, engine, flows, ideasWithLineage, leadership, lineage, missingLinks, nodeById, nodes, sphereById, yearText } from './graph';
 
 export type Post = {
@@ -177,6 +177,7 @@ export function buildPosts(): Post[] {
       `לכל מכשיר ניסחנו **פועל**, בלי שם התחום: להגדיל, לראות דרך, לסמן ולעקוב, להשוות.`,
       `**הפועל כבר עבר ${toolStats.crossed} פעמים לתחום אחר.** הדוגמה המוכרת: ${xr.he}. ברפואה ראו דרך הגוף, ובאמנות ראו דרך הציור.`,
       `במקום שהפועל עוד לא הגיע אליו ניסחנו הצעה. יש **${toolStats.ideas} הצעות**, וכולן השערה.`,
+      `ויש כיוון הפוך. מכשירי נובל רואים את הקטן והמהיר, והעיר עיוורת לגדול ולאיטי. לכן לתכנון יש **${planning.length} פעלים משלו**: ${planning.map((v) => v.verb).join(', ')}.`,
       `הסתייגות: הרשימה מכסה ${coverage.inList} מתוך ${coverage.all} פרסים במדעים. מכשיר בלי שאלה לא מגלה דבר.`,
     ],
     adopt: '**לא שואלים איזה מכשיר חסר.** שואלים מה בתחום שלי שקוף, מהיר, חלש, מעורבב או קבור, ובוחרים פועל.',

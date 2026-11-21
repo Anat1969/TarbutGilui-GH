@@ -130,6 +130,8 @@ async function page(b, opts = {}) {
   ok((await p.locator('[data-testid=tool-card] h2').innerText()).includes('לייזר'), 'tools: single pick switches instrument');
   await p.click('[data-testid=next-stage]'); await p.waitForSelector('[data-testid=method]');
   ok((await p.locator('[data-testid=method] li').count()) === 5, 'tools: five steps of the method');
+  ok((await p.locator('[data-testid=planning] .pv-row').count()) === 7, 'tools: six planning verbs and a header');
+  ok(await p.locator('[data-testid=planning] .pv-gold').first().isVisible() && await p.locator('[data-testid=planning] .pv-idea').isVisible(), 'tools: planning verbs show prize, crossing and proposal');
   ok(await p.locator('.post-rel .post-li').first().isVisible(), 'tools: linked post');
 
   await p.click('header >> text=פוסטים'); await p.waitForSelector('[data-testid=post]');

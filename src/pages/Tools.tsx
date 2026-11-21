@@ -6,7 +6,7 @@ import Rich from '../components/Rich';
 import Pick from '../components/Pick';
 import Bottom, { NextStage, PageHead, Stepper, stageOf } from '../components/Bottom';
 import { PostLinks } from './Posts';
-import { awards, fieldHe, fields, method, coverage, toolList as list, toolStats as stats, type Instrument } from '../lib/tools';
+import { awards, fieldHe, fields, method, coverage, planning, type Src, toolList as list, toolStats as stats, type Instrument } from '../lib/tools';
 
 const NOBEL = 'https://prasnovel-gh.vercel.app/#/people?id=';
 type Cell = { kind: 'gold' | 'done' | 'idea' | 'none'; n: number };
@@ -18,6 +18,8 @@ const cell = (i: Instrument, f: string): Cell => {
   return { kind: 'none', n: 0 };
 };
 const cellName = { gold: 'פרס נובל', done: 'מעבר שכבר קרה', idea: 'הצעה', none: 'ריק' };
+// מקור: קישור קטן ליד טענה. בלי מקור, הטענה נשארת מסומנת כידע כללי.
+const Source = ({ s }: { s?: Src }) => (s ? <a className="src" href={s.url} target="_blank" rel="noopener">מקור: <bdi dir="ltr">{s.by}</bdi></a> : null);
 const times = (n: number) => (n === 1 ? 'מעבר אחד' : `${n} מעברים`);
 
 export default function Tools({ params }: { params: Record<string, string> }) {
@@ -30,7 +32,7 @@ export default function Tools({ params }: { params: Record<string, string> }) {
   return (
     <div className="page tools-page">
       <PageHead kicker="מכשירים" q={<>איזה מכשיר <b>פתח את העין</b>, ולאיזה תחום הוא עוד לא הגיע?</>}
-        stepper={<Stepper l={l} to={to} desc={['מפת המעברים', 'מכשיר אחד מקרוב', 'צורת החקירה']} />}
+        stepper={<Stepper l={l} to={to} desc={['מפת המעברים', 'מכשיר אחד מקרוב', 'הפעלים של התכנון']} />}
         pick={
           <Pick testid="tool-search" placeholder="חיפוש מכשיר או פועל" current={<><b>{sel.he}</b><small>{sel.verb}</small></>}
             items={list.map((i) => ({ id: i.id, label: i.he, sub: i.verb, key: i.prizes.map((p) => p.he).join(' ') }))}
@@ -75,6 +77,7 @@ export default function Tools({ params }: { params: Record<string, string> }) {
               <span><b>קריאה:</b> שורה היא מכשיר, לפי שנת הפרס הראשון. לחיצה על משבצת פותחת אותה.</span>
             </div>
             <Rich as="p" className="insight" text={`==הכי הרבה מכשירים עברו אל ${stats.most.f.he}: ${stats.most.done}.== התחום שמחכה: **${stats.waiting.f.he}**, עם ${times(stats.waiting.done)} ו-**${stats.waiting.idea}** הצעות.`} />
+            <p className="flip"><a className="press" href={to(3)} data-testid="to-planning"><b>ומה עם הכיוון ההפוך?</b> לתכנון יש פעלים משלו, וחלקם כבר עברו למדע.</a></p>
           </section>
           <NextStage l={l} to={to} label={`${sel.he}: מה נראה, ולאן עוד לא הגיע`} />
         </div>
@@ -112,18 +115,38 @@ export default function Tools({ params }: { params: Record<string, string> }) {
               <div className="near">
                 <h3>לאן הוא כבר עבר <span className="tag tag-int">ידע כללי, טרם צוטט</span></h3>
                 {sel.crossed.map((c) => (
-                  <div key={c.f} className={`near-item t-done ${fsel === c.f ? 'hit' : ''}`}><b>{fieldHe(c.f)}</b><Rich as="span" className="near-ex" text={c.t} /></div>
+                  <div key={c.f} className={`near-item t-done ${fsel === c.f ? 'hit' : ''}`}><b>{fieldHe(c.f)}</b><Rich as="span" className="near-ex" text={c.t} /><Source s={c.src} /></div>
                 ))}
               </div>
             </section>
           </div>
-          <NextStage l={l} to={to} label="איך חקרתי, ומה ההסתייגות" />
+          <NextStage l={l} to={to} label="הכיוון ההפוך: הפעלים של התכנון" />
         </div>
       )}
 
       {l === 3 && (
         <div className="stage stage-3" key="t3">
-          <Rich as="h2" className="sec-t" text="==חמישה צעדים, מהפרס אל ההצעה.==" />
+          <Rich as="h2" className="sec-t" text="==המדע רואה את הקטן. העיר עיוורת לגדול.==" />
+          <div className="blind2">
+            <p><b>מכשירי נובל</b> פותרים דבר שהוא <span className="b-sci">קטן מדי</span><span className="b-sci">מהיר מדי</span><span className="b-sci">חלש מדי</span><span className="b-sci">רחוק מדי</span></p>
+            <p><b>העיר</b> היא <span className="b-city">גדולה מדי</span><span className="b-city">איטית מדי</span><span className="b-city">סגורה</span><span className="b-city">מוכרת מדי</span></p>
+            <p className="small">לכן לתכנון יש פעלים משלו. <b>{planning.filter((v) => v.sci.state === 'done').length}</b> מהם כבר עברו למדע, ו-<b>{planning.filter((v) => v.sci.state === 'idea').length}</b> עוד מחכה. <span className="tag tag-int">פרשנות</span> <span className="tag tag-int">ידע כללי, טרם צוטט</span></p>
+          </div>
+          <div className="pv" data-testid="planning" role="table" aria-label="הפעלים של התכנון">
+            <div className="pv-row pv-head" role="row"><span role="columnheader">העיוורון של העיר</span><span role="columnheader">הפועל, והמכשיר שלו</span><span role="columnheader">מאיפה הוא בא</span><span role="columnheader">ומה קרה לו במדע</span></div>
+            {planning.map((v, k) => (
+              <div key={v.id} className="pv-row grow" role="row" style={{ '--d': `${(k * 0.08).toFixed(2)}s` } as React.CSSProperties}>
+                <span className="pv-blind" role="cell">{v.blind}</span>
+                <span className="pv-verb" role="cell"><b>{v.verb}</b><small>{v.tool}</small></span>
+                <span className="pv-origin" role="cell"><Rich text={v.origin} />{v.osrc && <Source s={v.osrc} />}</span>
+                <span className={`pv-sci pv-${v.prizes.length ? 'gold' : v.sci.state}`} role="cell">
+                  <em>{v.prizes.length ? `פרס נובל, ${v.prizes[0].y}` : v.sci.state === 'done' ? 'כבר עבר' : 'הצעה (השערה)'}</em>
+                  <Rich text={v.sci.t} />{v.sci.state === 'done' && <Source s={v.sci.src} />}
+                </span>
+              </div>
+            ))}
+          </div>
+          <Rich as="h2" className="sec-t sec-2" text="==צורת החקירה: חמישה צעדים, מהפרס אל ההצעה.==" />
           <ol className="method" data-testid="method">
             {method.map((m, k) => <li key={m.t}><span className="m-n">{k + 1}</span><b>{m.t}</b><Rich as="p" text={m.x} /></li>)}
           </ol>
