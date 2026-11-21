@@ -4,7 +4,7 @@ const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 export type Distilled = { insight: string; explain: string; next: string; by?: string };
 const KEY = 'tg.distill.';
 export const cached = (id: string): Distilled | null => { try { return JSON.parse(localStorage.getItem(KEY + id) || 'null'); } catch { return null; } };
-export async function distill(kind: 'tree' | 'period' | 'prize', id: string, context: string): Promise<Distilled> {
+export async function distill(kind: 'tree' | 'period' | 'prize' | 'tool', id: string, context: string): Promise<Distilled> {
   const r = await fetch(URL_, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ANON}`, apikey: ANON },

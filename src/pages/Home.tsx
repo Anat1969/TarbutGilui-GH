@@ -3,7 +3,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { href } from '../route';
 import Rich from '../components/Rich';
 import ChainStrip from '../components/ChainStrip';
+import toolsRaw from '../data/instruments.json';
 import { allPrizeChains, engine, ideasWithLineage, leadership, missingLinks, nodeById, nodes, prizeKey, sphereById, SRC } from '../lib/graph';
+
+type T = { instruments: { prizes: { y: number; f: string }[]; crossed: unknown[]; ideas: unknown[] }[] };
+const tools = toolsRaw as unknown as T;
+const toolAwards = new Set(tools.instruments.flatMap((i) => i.prizes.map((p) => `${p.y}-${p.f}`))).size;
+const toolCrossed = tools.instruments.reduce((a, i) => a + i.crossed.length, 0);
+const toolIdeas = tools.instruments.reduce((a, i) => a + i.ideas.length, 0);
 
 export default function Home() {
   const chains = useMemo(allPrizeChains, []);
@@ -55,7 +62,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="doors" aria-label="שלוש השאלות">
+      <section className="doors" aria-label="ארבע השאלות">
         <a className="door press" href={href('tree', { id: top?.n.id })} data-testid="door-tree">
           <span className="door-q">ממי ירש ולמי מסר?</span>
           <span className="door-n">{ideas.length}</span>
@@ -76,6 +83,13 @@ export default function Home() {
           <span className="door-u">שנים בשרשרת הארוכה ביותר</span>
           {m0 && <Rich as="p" className="door-i" text={`==חוליה חסרה אחת סוגרת ${m0.prizes.length} שרשראות.== בין **${nodeById.get(m0.from)!.who}** ל**${nodeById.get(m0.to)!.who}**.`} />}
           <span className="door-go">לשרשרת עד הפרס</span>
+        </a>
+        <a className="door press" href={href('tools')} data-testid="door-tools">
+          <span className="door-q">איזה מכשיר פתח את העין?</span>
+          <span className="door-n" style={{ color: 'var(--gold)' }}>{toolAwards}</span>
+          <span className="door-u">פרסי נובל על מכשיר או בזכותו, ב-{tools.instruments.length} מכשירים</span>
+          <Rich as="p" className="door-i" text={`==הפועל של המכשיר נייד.== **${toolCrossed}** מעברים לתחום אחר כבר קרו, ו-**${toolIdeas}** מחכים.`} />
+          <span className="door-go">למכשירים</span>
         </a>
       </section>
 

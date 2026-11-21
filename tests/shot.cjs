@@ -2,7 +2,7 @@
 const { chromium } = require('playwright');
 const base = process.env.URL || 'http://localhost:4173/';
 const out = process.env.OUT || 'shots';
-const pages = [['home', '#/'], ['tree', '#/tree'], ['culture', '#/culture'], ['prize', '#/prize'], ['sources', '#/sources']];
+const pages = [['home', '#/'], ['tree', '#/tree'], ['culture', '#/culture'], ['prize', '#/prize'], ['tools', '#/tools'], ['sources', '#/sources']];
 (async () => {
   require('fs').mkdirSync(out, { recursive: true });
   const b = await chromium.launch();

@@ -35,7 +35,7 @@ async function page(b, opts = {}) {
   ok(!(await p.locator('header >> text=העתקת קישור').first().isVisible().catch(() => false)), 'no loose development buttons in the bar');
   ok((await p.locator('html').getAttribute('dir')) === 'rtl', 'RTL');
   ok(await p.locator('.relay').isVisible(), 'home: live chain');
-  ok((await p.locator('.door').count()) === 3, 'home: three question doors');
+  ok((await p.locator('.door').count()) === 4, 'home: four question doors');
 
   // עץ
   await p.click('[data-testid=door-tree]');
@@ -97,6 +97,23 @@ async function page(b, opts = {}) {
   await p.waitForSelector('.distill-out');
   ok(true, 'distilled text persists after reload');
 
+  // מכשירים
+  await p.click('nav >> text=מכשירים');
+  await p.waitForSelector('[data-testid=matrix] .mx-row');
+  ok((await p.locator('[data-testid=matrix] .mx-row').count()) === 22, 'tools: 21 instruments and a header row');
+  ok((await p.locator('[data-testid=matrix] .mx-gold').count()) > 20, 'tools: gold cells for Nobel prizes');
+  ok((await p.locator('[data-testid=method] li').count()) === 5, 'tools: five steps of the method');
+  const t0 = await p.locator('[data-testid=tool-card] h2').innerText();
+  await p.locator('[data-testid=matrix] .mx-row:not(.on) .mx-idea').first().click();
+  await p.waitForTimeout(200);
+  ok((await p.url()).includes('#/tools?t=') && (await p.url()).includes('f='), 'tools: clicking a cell updates the link');
+  ok((await p.locator('[data-testid=tool-card] h2').innerText()) !== t0, 'tools: side panel switches, same screen');
+  ok(await p.locator('[data-testid=tool-card] .t-idea.pick').isVisible(), 'tools: the chosen proposal is marked');
+  ok((await p.locator('[data-testid=tool-card] .t-gold').count()) >= 1, 'tools: prizes listed from Nobel data');
+  await p.click('[data-testid=distill-btn]');
+  await p.waitForSelector('.distill-out');
+  ok(calls[calls.length - 1].kind === 'tool' && calls[calls.length - 1].context.includes('הפועל'), 'tools: distill sends the instrument');
+
   // יצירות
   await p.click('header >> text=יצירות');
   await p.waitForTimeout(1200);
@@ -120,7 +137,7 @@ async function page(b, opts = {}) {
 
   // נייד והפחתת תנועה
   const m = await page(b, { viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
-  for (const h of ['#/', '#/tree', '#/culture', '#/prize', '#/sources']) {
+  for (const h of ['#/', '#/tree', '#/culture', '#/prize', '#/tools', '#/sources']) {
     await m.p.goto(base + h); await m.p.waitForTimeout(400);
     const w = await m.p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     ok(w <= 1, `mobile ${h}: no horizontal scroll (${w})`);

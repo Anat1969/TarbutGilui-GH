@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Rich from './Rich';
 import { cached, distill, type Distilled } from '../lib/ai';
-export default function Distill({ kind, id, context, label }: { kind: 'tree' | 'period' | 'prize'; id: string; context: () => string; label: string }) {
+export default function Distill({ kind, id, context, label }: { kind: 'tree' | 'period' | 'prize' | 'tool'; id: string; context: () => string; label: string }) {
   const [out, setOut] = useState<Distilled | null>(() => cached(kind + id));
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
