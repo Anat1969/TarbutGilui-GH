@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Tree from './pages/Tree';
 import Culture from './pages/Culture';
 import PrizePage from './pages/Prize';
+import Tools from './pages/Tools';
 import Sources from './pages/Sources';
 import Creations from './pages/Creations';
 import Posts from './pages/Posts';
@@ -16,11 +17,12 @@ declare global {
   } }
 }
 
-// שלוש השאלות הן המבנה: כל לשונית היא שאלה של המשתמש.
+// ארבע השאלות הן המבנה: כל לשונית היא שאלה של המשתמש.
 const TABS = [
   { page: 'tree', label: 'עץ הרעיונות', q: 'ממי ירש ולמי מסר?' },
   { page: 'culture', label: 'תרבות כמנוע', q: 'מי הובילה כל תקופה?' },
   { page: 'prize', label: 'שרשרת עד הפרס', q: 'כמה רחוק הפרס מהשורש?' },
+  { page: 'tools', label: 'מכשירים', q: 'מה פתח את העין?' },
 ];
 
 export default function App() {
@@ -37,7 +39,7 @@ export default function App() {
           <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
           <span className="brand-name">תרבות וגילוי</span>
         </a>
-        <nav className="tabs" aria-label="שלוש השאלות">
+        <nav className="tabs" aria-label="ארבע השאלות">
           {TABS.map((t) => (
             <a key={t.page} className={`tab press ${page === t.page ? 'on' : ''}`} href={href(t.page)} aria-current={page === t.page ? 'page' : undefined}>
               <span className="tab-label">{t.label}</span><span className="tab-q">{t.q}</span>
@@ -52,6 +54,7 @@ export default function App() {
         {page === 'tree' ? <Tree params={params} />
           : page === 'culture' ? <Culture params={params} />
           : page === 'prize' ? <PrizePage params={params} />
+          : page === 'tools' ? <Tools params={params} />
           : page === 'sources' ? <Sources />
           : page === 'creations' ? <Creations />
           : page === 'posts' ? <Posts params={params} />

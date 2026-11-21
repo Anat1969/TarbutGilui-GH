@@ -1,4 +1,4 @@
-// דף הבית: כרזה. משפט אחד, שרשרת אחת שמתפתחת מהשורש עד נובל, ושלוש שאלות.
+// דף הבית: כרזה. משפט אחד, שרשרת אחת שמתפתחת מהשורש עד נובל, וארבע שאלות.
 // החזון (רעיון עובר בין תרבויות), המטרה (להבין מי הניע אותו) והכלי (ללכת אחרי השרשרת) נקראים בלי שנאמרו.
 // עיצוב שונה מהדפים הפנימיים: דיו כהה, אור הפרס בזהב. השרשרת מתפתחת פעם אחת ונעצרת.
 import { useMemo, useState } from 'react';
@@ -31,10 +31,11 @@ export default function Home() {
         <button className="poster-again" onClick={() => setI((x) => (x + 1) % pool.length)} data-testid="another">שרשרת אחרת</button>
       </section>
 
-      <nav className="poster-doors" aria-label="שלוש השאלות">
+      <nav className="poster-doors" aria-label="ארבע השאלות">
         <a className="pdoor" href={href('tree')} data-testid="door-tree"><b>ממי ירש רעיון, ולמי מסר?</b><span>עץ הרעיונות</span></a>
         <a className="pdoor" href={href('culture')} data-testid="door-culture"><b>איזו תרבות הובילה כל תקופה?</b><span>תרבות כמנוע</span></a>
         <a className="pdoor" href={href('prize')} data-testid="door-prize"><b>כמה רחוק הפרס מהשורש?</b><span>שרשרת עד הפרס</span></a>
+        <a className="pdoor" href={href('tools')} data-testid="door-tools"><b>איזה מכשיר פתח את העין?</b><span>מכשירים</span></a>
       </nav>
       <p className="poster-foot"><a href={href('posts')}>פוסטים</a> · <a href={href('sources')}>מקורות ומילון</a> · <a href={href('creations')}>יצירות</a></p>
     </div>

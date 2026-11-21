@@ -1,6 +1,7 @@
 // פוסטים: מה שכפתור הזיקוק היה כותב לפי בקשה, כתוב מראש ושמור.
 // כל מספר מחושב מהגרף, כך שרענון נתונים מעדכן את הפוסט. עובדה, פרשנות והשערה מסומנות בנפרד.
 // ציטוט רק כשהוא מאומת. הייקו: מקורי.
+import { coverage, toolList, toolStats } from './tools';
 import { allPrizeChains, engine, flows, ideasWithLineage, leadership, lineage, missingLinks, nodeById, nodes, sphereById, yearText } from './graph';
 
 export type Post = {
@@ -165,6 +166,23 @@ export function buildPosts(): Post[] {
     haiku: ['רוב הדרך ערפל', 'כמה צעדים בהירים', 'ומהם גשר'],
     links: [{ label: 'לשרשרת הארוכה', page: 'prize' }],
     about: [{ page: 'prize' }],
+  });
+
+  // 8. מכשירים: הפועל נייד
+  const xr = toolList.find((i) => i.id === 'xray')!;
+  posts.push({
+    id: 'tools', title: 'מכשיר הוא פועל, והפועל נייד',
+    dek: `בדקנו ${toolList.length} מכשירים שעליהם, או בעזרתם, ניתנו ${toolStats.awards} פרסי נובל.`,
+    body: [
+      `לכל מכשיר ניסחנו **פועל**, בלי שם התחום: להגדיל, לראות דרך, לסמן ולעקוב, להשוות.`,
+      `**הפועל כבר עבר ${toolStats.crossed} פעמים לתחום אחר.** הדוגמה המוכרת: ${xr.he}. ברפואה ראו דרך הגוף, ובאמנות ראו דרך הציור.`,
+      `במקום שהפועל עוד לא הגיע אליו ניסחנו הצעה. יש **${toolStats.ideas} הצעות**, וכולן השערה.`,
+      `הסתייגות: הרשימה מכסה ${coverage.inList} מתוך ${coverage.all} פרסים במדעים. מכשיר בלי שאלה לא מגלה דבר.`,
+    ],
+    adopt: '**לא שואלים איזה מכשיר חסר.** שואלים מה בתחום שלי שקוף, מהיר, חלש, מעורבב או קבור, ובוחרים פועל.',
+    haiku: ['עדשה אחת.', 'מה שלא היה שם', 'נהיה מקום.'],
+    links: [{ label: 'למפת המכשירים', page: 'tools' }],
+    about: [{ page: 'tools' }],
   });
 
   return posts;
