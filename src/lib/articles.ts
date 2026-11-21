@@ -5,6 +5,7 @@ import { toolList, toolStats } from './tools';
 export type Article = {
   id: string; verb: string; tool: string; t1: string; t2: string; dek: string;
   img?: { src: string; cap: string; credit: string };
+  prompt?: { zikuk: string; text: string };
   chapters: { h: string; body: string[]; insight: string }[];
   plan: { body: string[]; steps: string[] }; ask: string; haiku: string[];
 };

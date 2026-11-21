@@ -142,6 +142,7 @@ async function page(b, opts = {}) {
   // כתבות
   await p.click('header >> text=כתבות'); await p.waitForSelector('[data-testid=articles] .art-card');
   ok((await p.locator('.art-card').count()) === 6, 'articles: six articles listed, tab in the bar');
+  const cj2 = await p.locator('.art-card').evaluateAll((els) => els.map((e) => new URLSearchParams(e.getAttribute('href').split('?')[1]).get('id')));
   await p.locator('.art-card').nth(1).click(); await p.waitForSelector('[data-testid=article]');
   ok((await p.url()).includes('#/articles?id='), 'articles: one article by link');
   ok((await p.locator('.pg').count()) === 6 && (await p.locator('.ch-insight').count()) === 3, 'articles: six pages, an insight closing each chapter');
@@ -149,9 +150,20 @@ async function page(b, opts = {}) {
   const bg = await p.evaluate(() => [...document.querySelectorAll('.pg')].map((e) => getComputedStyle(e).backgroundColor));
   ok(bg[0] === 'rgb(255, 255, 255)' && bg[5] === 'rgb(19, 19, 19)', 'articles: pages run from light to dark');
   ok(!(await p.locator('.mag').innerText()).includes('{'), 'articles: no unfilled placeholders');
+  ok(await p.locator('[data-testid=prompt] .prompt-t').isVisible() && (await p.locator('.prompt-t').innerText()).includes('--ar 1:1'), 'articles: an article without an image carries a ready image prompt');
+  ok(!(await p.locator('[data-testid=sheet]').isVisible()), 'articles: the print sheet is hidden on screen');
+  await p.emulateMedia({ media: 'print' });
+  for (const id of cj2) {
+    await p.goto(base + '#/articles?id=' + id); await p.waitForSelector('[data-testid=sheet]'); await p.evaluate(() => document.fonts.ready);
+    const r = await p.evaluate(() => { const s = document.querySelector('.sheet'); const b = s.getBoundingClientRect(); return { h: Math.round(b.height / b.width * 1000), over: [...s.querySelectorAll('.sh')].filter((z) => z.scrollHeight > z.clientHeight + 1).length, others: [...document.querySelectorAll('.mag > :not(.sheet)')].filter((e) => getComputedStyle(e).display !== 'none').length }; });
+    ok(r.h >= 1410 && r.h <= 1418 && r.over === 0 && r.others === 0, `articles print ${id}: one A4 sheet, nothing overflows (${JSON.stringify(r)})`);
+  }
+  await p.emulateMedia({ media: 'screen' });
+  await p.goto(base + '#/articles?id=pyramid'); await p.waitForSelector('[data-testid=article]');
   for (const [ext, magic] of [['pdf', '%PDF'], ['docx', 'PK']]) {
     const body = (await (await p.request.get(base + 'articles/pyramid.' + ext)).body()).toString('latin1');
     ok(body.startsWith(magic), `articles: a real ${ext} file is served`);
+    if (ext === 'pdf') ok((body.match(/\/Type\s*\/Page[^s]/g) || []).length === 1, 'articles: the PDF is a single page');
   }
   await p.goto(base + '#/articles?id=see-through'); await p.waitForSelector('.cover-fig img');
   ok(await p.evaluate(() => { const i = document.querySelector('.cover-fig img'); return i.complete && i.naturalWidth > 0 && new URL(i.src).origin === location.origin; }), 'articles: cover image is local and loads');
