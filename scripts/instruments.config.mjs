@@ -388,3 +388,22 @@ export const PLANNING = [
     prizes: [],
   },
 ];
+
+// השאלה שפותחת את הדף: מה אצלך לא נראה, ולמה. כל מכשיר וכל פועל תכנון עונה על עיוורון אחד.
+export const BLIND = [
+  { id: 'small', he: 'קטן מדי' }, { id: 'fast', he: 'מהיר מדי' }, { id: 'weak', he: 'חלש מדי' }, { id: 'far', he: 'רחוק מדי' },
+  { id: 'closed', he: 'סגור' }, { id: 'mixed', he: 'מעורבב' }, { id: 'clear', he: 'שקוף' },
+  { id: 'big', he: 'גדול מדי' }, { id: 'slow', he: 'איטי מדי' }, { id: 'known', he: 'מוכר מדי' },
+];
+export const BLIND_OF = {
+  lightmic: 'small', emic: 'small', xtal: 'small', accel: 'small',
+  laser: 'fast', track: 'fast',
+  interf: 'weak', elec: 'weak', ccd: 'weak', seq: 'weak',
+  spec: 'far', scope: 'far',
+  xray: 'closed', mri: 'closed',
+  mass: 'mixed', sep: 'mixed', crispr: 'mixed', field: 'mixed',
+  tracer: 'clear', gfp: 'clear',
+  model: 'big',
+  // פעלי התכנון
+  shrink: 'big', layers: 'mixed', cut: 'closed', speed: 'slow', watch: 'far', estrange: 'known',
+};
