@@ -2,12 +2,14 @@
 import raw from '../data/instruments.json';
 
 export type ToolPrize = { nid: string; he: string; en: string; y: number; f: string; fh: string; d: string; mh: string; role: 'f' | 'w' };
-export type Note = { f: string; t: string };
+export type Src = null | { url: string; by: string };
+export type Note = { f: string; t: string; src?: Src };
+export type PlanVerb = { id: string; verb: string; blind: string; tool: string; origin: string; osrc: Src; sci: { state: 'done' | 'idea'; t: string; src: Src }; prizes: ToolPrize[] };
 export type Instrument = { id: string; he: string; verb: string; see: string; shift: string; node: null | { id: string; t: string; y: number }; prizes: ToolPrize[]; crossed: Note[]; ideas: Note[] };
 export type Field = { id: string; he: string; sci: boolean };
-const data = raw as unknown as { built: string; fields: Field[]; method: { t: string; x: string }[]; instruments: Instrument[]; coverage: { inList: number; all: number } };
+const data = raw as unknown as { built: string; fields: Field[]; method: { t: string; x: string }[]; instruments: Instrument[]; planning: PlanVerb[]; coverage: { inList: number; all: number } };
 
-export const { fields, method, coverage } = data;
+export const { fields, method, coverage, planning } = data;
 export const toolList = [...data.instruments].sort((a, b) => a.prizes[0].y - b.prizes[0].y);
 export const fieldHe = (id: string) => fields.find((f) => f.id === id)?.he || id;
 /** פרס = שנה ותחום. כמה זוכים חלקו אותו לא משנה את הספירה. */
