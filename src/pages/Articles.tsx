@@ -1,6 +1,6 @@
 // כתבות: רשימה, וכתבה אחת בשישה דפים שיורדים מבהיר לכהה (תקן הכתבות: אפורים בלבד, תמונות בצבע).
 // כל כתבה: שער, שלושה פרקים עם תובנה, מה זה אומר לתכנון, ושאלה לקוראת.
-// בהדפסה וב-PDF: דף A4 אחד (Sheet), באותו מהלך גוונים. כתבה בלי תמונה מציגה פרומפט מוכן להדמיית השער.
+// בהדפסה וב-PDF: דף A4 אחד (Sheet), באותו מהלך גוונים. כתבה בלי תמונה מציגה בשער מסגרת עם פרומפט מוכן להדמיה.
 import { useState } from 'react';
 import { href } from '../route';
 import Rich from '../components/Rich';
@@ -9,20 +9,17 @@ import { articles, type Article } from '../lib/articles';
 const BY = "אד' ענת דוד שטיבלמן";
 const num = (n: number) => String(n).padStart(2, '0');
 
-// פרומפט להדמיית השער: לפי סקיל הפרומפטים החזותיים. מוצג רק בכתבה שאין לה תמונה, ולא מודפס.
-function Prompt({ p }: { p: NonNullable<Article['prompt']> }) {
+// מסגרת להדמיית השער, במקום התמונה: משפט הזיקוק, והפרומפט בתוך הכפתור (לפי סקיל הפרומפטים החזותיים).
+// מוצגת רק בכתבה שאין לה תמונה, ולא מודפסת. כשהתמונה מגיעה, היא תופסת את המקום, והמסגרת נעלמת.
+function Prompt({ p, id }: { p: NonNullable<Article['prompt']>; id: string }) {
   const [ok, setOk] = useState(false);
   const copy = async () => { try { await navigator.clipboard.writeText(p.text); setOk(true); setTimeout(() => setOk(false), 1800); } catch { setOk(false); } };
   return (
-    <div className="prompt" data-testid="prompt">
-      <p className="ask-l">הדמיה לשער · פרומפט מוכן</p>
-      <p className="prompt-z"><b>זיקוק:</b> {p.zikuk}</p>
-      <div className="prompt-t">
-        <span>{p.text.slice(0, p.text.indexOf('Documentary'))}</span>
-        <span className="prompt-en" dir="ltr">{p.text.slice(p.text.indexOf('Documentary'))}</span>
-      </div>
-      <button className="prompt-b press" onClick={copy} data-testid="prompt-copy">{ok ? 'הועתק' : 'העתקת הפרומפט'}</button>
-      <p className="prompt-n">התמונה שתיווצר תיכנס לשער, ותסומן "הדמיה".</p>
+    <div className="prompt-frame" data-testid="prompt" dir="rtl">
+      <p className="prompt-l">מקום להדמיה</p>
+      <p className="prompt-z">{p.zikuk}</p>
+      <button className="prompt-b press" onClick={copy} data-testid="prompt-copy" data-prompt={p.text} aria-label="העתקת הפרומפט למידג'רני">{ok ? 'הועתק' : 'העתקת הפרומפט'}</button>
+      <p className="prompt-n"><span>שם הקובץ: <code dir="ltr">{id}.jpg</code></span><span>התמונה תיכנס לכאן, ותסומן "הדמיה".</span></p>
     </div>
   );
 }
@@ -111,7 +108,8 @@ export default function Articles({ params }: { params: Record<string, string> })
       <section className="pg pg-1">
         {a.img ? (
           <figure className="cover-fig"><img src={a.img.src} alt={a.img.cap} /><figcaption>{a.img.cap}. {a.img.credit}</figcaption></figure>
-        ) : <div className="cover-type" aria-hidden="true"><span>{String(i + 1).padStart(2, '0')}</span><em>{a.verb}</em></div>}
+        ) : a.prompt ? <Prompt p={a.prompt} id={a.id} />
+          : <div className="cover-type" aria-hidden="true"><span>{String(i + 1).padStart(2, '0')}</span><em>{a.verb}</em></div>}
         <div className="cover-text">
           <p className="mag-verb">{a.verb}</p>
           <h1 className="mag-t"><span>{a.t1}</span><b>{a.t2}</b></h1>
@@ -146,7 +144,6 @@ export default function Articles({ params }: { params: Record<string, string> })
         <div className="colophon">
           <p>השנים, השמות והמספרים בכתבה נכתבו מידע כללי, וטרם צוטטו ממקור. פרסי נובל אומתו מול נתוני קרן נובל.</p>
           <p>הדפים יורדים מבהיר לכהה, עם קפיצה אחת באמצע: מהסיפור אל מה שעושים איתו. בהדפסה: דף A4 אחד.</p>
-          {a.prompt && !a.img && <Prompt p={a.prompt} />}
           <p className="mag-links">
             <a href={a.tool ? href('tools', { t: a.tool, l: '2' }) : href('tools', { l: '3' })}>לדף המכשירים</a>
             <a href={href('articles', { id: next.id })}>הכתבה הבאה: {next.t1} {next.t2}</a>

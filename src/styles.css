@@ -666,13 +666,15 @@ a.src:hover { color: var(--ink); }
   .mag-bar, .pg-foot { padding-inline: 18px; inset-inline: 0; }
   .pg-foot { inset: auto 0 20px; }
 }
-/* פרומפט להדמיית השער */
-.prompt { margin: 18px 0 6px; padding-top: 14px; border-top: 1px solid var(--rule); max-width: 680px; color: var(--fg); }
-.prompt-z { margin: 8px 0; font: 400 15px/1.5 var(--sans); }
-.prompt-t { margin: 0; padding: 12px 14px; background: rgba(255, 255, 255, .07); border-radius: 4px; font: 300 13.5px/1.75 var(--sans); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--fg); }
-.prompt-en { display: block; margin-top: 6px; text-align: left; unicode-bidi: isolate; }
-.prompt-b { margin-top: 10px; padding: 10px 16px; border: 0; border-radius: var(--r); background: #f2f2f2; color: #111; font: 700 14px/1 var(--sans); cursor: pointer; }
-.prompt-n { margin: 8px 0 0 !important; }
+/* מסגרת להדמיית השער: במקום התמונה, מקווקו כי עוד אין תמונה. הפרומפט בתוך הכפתור */
+.prompt-frame { aspect-ratio: 1 / 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 14px; padding: 28px; border: 1.5px dashed var(--fg2); color: var(--fg); text-align: right; }
+.prompt-l { margin: 0; font: 400 13px/1.2 var(--sans); letter-spacing: .14em; color: var(--fg2); }
+.prompt-z { margin: 0; font: 300 clamp(17px, 1.6vw, 21px)/1.5 var(--sans); max-width: 30ch; }
+.prompt-b { padding: 12px 20px; border: 0; border-radius: var(--r); background: #111; color: #fff; font: 700 15px/1 var(--sans); cursor: pointer; }
+.prompt-n { margin: 0; display: flex; flex-direction: column; gap: 2px; font: 300 12.5px/1.5 var(--sans); color: var(--fg2); }
+.prompt-n code { font: 400 12px/1 ui-monospace, monospace; color: var(--fg); unicode-bidi: isolate; }
+@media (max-width: 760px) { .prompt-frame { aspect-ratio: auto; min-height: 260px; padding: 22px; } }
+@media print { .prompt-frame { display: none; } }
 
 /* דף A4 אחד להדפסה: ארבעה אזורים מבהיר לכהה, עם קפיצה אחת. הרקע מכסה את כל הדף. */
 .sheet { display: none; }
