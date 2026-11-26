@@ -20,14 +20,22 @@ async function page(b, opts = {}) {
     calls.push(JSON.parse(r.request().postData() || '{}'));
     await r.fulfill({ contentType: 'application/json', body: JSON.stringify({ insight: 'רעיון **עובר** בין תרבויות.', explain: 'השושלת חוצה **7** תרבויות.', next: 'מה עצר אותו?', by: 'Gemini' }) });
   });
+  // שמירת תמונות השער: מוק לפונקציה tarbutgilui-cover, עם זיכרון של מה שנשמר
+  const covers = {}; const uploads = [];
+  await p.route('https://ktqmwpbzcnzkhjskqisy.supabase.co/functions/v1/tarbutgilui-cover', async (r) => {
+    const q = JSON.parse(r.request().postData() || '{}');
+    if (q.mode === 'upload') { uploads.push(q); covers[q.article_id] = base + 'articles/see-through.jpg'; return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ article_id: q.article_id, url: covers[q.article_id] }) }); }
+    if (q.mode === 'clear') { covers[q.article_id] = null; return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ article_id: q.article_id, url: null }) }); }
+    return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ covers }) });
+  });
   const errors = [];
   p.on('pageerror', (e) => errors.push(String(e)));
-  return { p, ctx, calls, errors };
+  return { p, ctx, calls, errors, uploads };
 }
 
 (async () => {
   const b = await chromium.launch();
-  const { p, ctx, calls, errors } = await page(b, { viewport: { width: 1440, height: 900 } });
+  const { p, ctx, calls, errors, uploads } = await page(b, { viewport: { width: 1440, height: 900 } });
 
   await p.goto(base);
   await p.waitForSelector('.pdoor');
@@ -152,6 +160,14 @@ async function page(b, opts = {}) {
   ok(!(await p.locator('.mag').innerText()).includes('{'), 'articles: no unfilled placeholders');
   ok(await p.locator('.pg-1 [data-testid=prompt]').isVisible() && ((await p.locator('[data-testid=prompt-copy]').getAttribute('data-prompt')) || '').includes('--ar 1:1'), 'articles: an article without an image has a frame in the cover, and the prompt sits in the button');
   ok(!(await p.locator('.pg-1 [data-testid=prompt]').innerText()).includes('--ar'), 'articles: the prompt text itself is not shown, only the button');
+  // התמונה שנוצרה נכנסת למסגרת ונשמרת: PNG אמיתי (16 על 16), נשלח כ-JPEG, ותופס את השער ואת דף ההדפסה
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABlklEQVR4nBXRURVEIQhFUSMYgQhGMAIRiGCEE8EIRiACEYhABCLMG7/ZrMt1jMEcyGAN9kAHNjgDBnfwBj6IQQ5q0IMxJnMikzXZE53Y5EyY3Mmb+CQmOalJzw8IUxBhCVtQwYQjIFzhCS6EkEIJLR9YzIUs1mIvdGGLs2BxF2/hi1jkoha9PrCZG9mszd7oxjZnw+Zu3sY3sclNbXp/QJmKKEvZiiqmHAXlKk9xJZRUSmn9gDENMZaxDTXMOAbGNZ7hRhhplNH2gcM8yGEd9kEPdjgHDvfwDn6IQx7q0OcD/wK/Sr4jv9hfkG/1N/x/Fx44BCQU9Pc94zIvclmXfdGLXc79j9/Lu/glLnmpS98PPOZDHuuxH/qwx3n/5ffxHv6IRz7q0e8DznTEWc521DHn+D/KdZ7jTjjplNP+gWAGEqxgBxpYcOIf/AYv8CCCDCro+EAyE0lWshNNLDn5P/MmL/Ekkkwq6fxAMQspVrELLaw49S/lFq/wIoosquj6QDMbaVazG22sOf2v8Dav8SaabKrp5geIAnAQEbP2+wAAAABJRU5ErkJggg==', 'base64');
+  await p.locator('.pg-1 [data-testid=cover-input]').setInputFiles({ name: 'cover.png', mimeType: 'image/png', buffer: png });
+  await p.waitForSelector('.pg-1 [data-testid=cover-img]', { timeout: 5000 }).catch(() => {});
+  ok(uploads.length === 1 && uploads[0].image.startsWith('/9j/'), 'articles: a dropped image is converted to JPEG and saved through the cover function');
+  ok(await p.locator('.pg-1 [data-testid=cover-img]').isVisible() && (await p.locator('.pg-1 figcaption').innerText()).startsWith('הדמיה'), 'articles: the saved image takes the frame\'s place, captioned as a visualization');
+  ok((await p.locator('.sheet .sh-fig img').getAttribute('src') || '').includes('see-through.jpg'), 'articles: the saved image goes into the one-page print sheet too');
+  ok(await p.locator('.pg-1 [data-testid=prompt-copy]').count() === 1, 'articles: the prompt button stays next to the image, to make another version');
   ok(!(await p.locator('[data-testid=sheet]').isVisible()), 'articles: the print sheet is hidden on screen');
   await p.emulateMedia({ media: 'print' });
   for (const id of cj2) {
