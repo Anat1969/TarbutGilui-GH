@@ -202,6 +202,8 @@ async function page(b, opts = {}) {
     await m.p.goto(base + h); await m.p.waitForTimeout(400);
     const w = await m.p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     ok(w <= 1, `mobile ${h}: no horizontal scroll (${w})`);
+    const cut = await m.p.evaluate(() => { const q = document.querySelector('.phead-q .q'); return q ? q.scrollWidth - q.clientWidth : 0; });
+    ok(cut <= 1, `mobile ${h}: page question not cut (${cut})`);
   }
   await m.p.goto(base + '#/tree');
   ok(await m.p.locator('[data-testid=tree-canvas] .node').first().isVisible(), 'mobile tree: the graph, scrollable sideways');

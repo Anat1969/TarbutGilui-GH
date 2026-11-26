@@ -500,7 +500,7 @@ h1, h2, .b-main, .post-t { text-wrap: balance; }
 }
 /* כותרת המסך לא מרחיבה את הדף בנייד */
 .phead > * { min-width: 0; }
-@media (max-width: 1180px) { .phead { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1180px) { .phead { grid-template-columns: minmax(0, 1fr); } .phead-q .q { white-space: normal; text-wrap: balance; } }
 .pick-v > b { flex: none; }
 .tools-page .next { max-width: 100%; }
 .tools-page .next span { white-space: normal; }
