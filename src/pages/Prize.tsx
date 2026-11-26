@@ -110,8 +110,8 @@ export default function PrizePage({ params }: { params: Record<string, string> }
         <div className="stage stage-3" key="p3">
           <div className="lists3 lists3-2">
             <section>
-              <Rich as="h2" className="sec-t" text={`==שלושה מקורות יחזקו ${new Set(miss.slice(0, 3).flatMap((m) => m.prizes.map(prizeKey))).size} שרשראות.==`} />
-              <p className="chart-sub"><b>אלה קשרים בין גילויים שעדיין אין להם מקור.</b> המספר: כמה שרשראות עוברות בקשר.</p>
+              <Rich as="h2" className="sec-t" text={`==שלושה גילויים חסרים קוטעים ${new Set(miss.slice(0, 3).flatMap((m) => m.prizes.map(prizeKey))).size} שרשראות.==`} />
+              <p className="chart-sub"><b>כאן השרשרת נקטעת.</b> חיברנו לגילוי הקרוב בזמן, אבל הקשר הזה כנראה לא קרה. החוליה האמיתית היא גילוי שעוד חסר בעולם נעלם. המספר: כמה שרשראות נקטעות כאן.</p>
               <ol className="miss" data-testid="missing">
                 {miss.slice(0, 8).map((m) => {
                   const a = nodeById.get(m.from)!, b = nodeById.get(m.to)!;
