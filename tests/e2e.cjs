@@ -150,7 +150,8 @@ async function page(b, opts = {}) {
   const bg = await p.evaluate(() => [...document.querySelectorAll('.pg')].map((e) => getComputedStyle(e).backgroundColor));
   ok(bg[0] === 'rgb(255, 255, 255)' && bg[5] === 'rgb(19, 19, 19)', 'articles: pages run from light to dark');
   ok(!(await p.locator('.mag').innerText()).includes('{'), 'articles: no unfilled placeholders');
-  ok(await p.locator('[data-testid=prompt] .prompt-t').isVisible() && (await p.locator('.prompt-t').innerText()).includes('--ar 1:1'), 'articles: an article without an image carries a ready image prompt');
+  ok(await p.locator('.pg-1 [data-testid=prompt]').isVisible() && ((await p.locator('[data-testid=prompt-copy]').getAttribute('data-prompt')) || '').includes('--ar 1:1'), 'articles: an article without an image has a frame in the cover, and the prompt sits in the button');
+  ok(!(await p.locator('.pg-1 [data-testid=prompt]').innerText()).includes('--ar'), 'articles: the prompt text itself is not shown, only the button');
   ok(!(await p.locator('[data-testid=sheet]').isVisible()), 'articles: the print sheet is hidden on screen');
   await p.emulateMedia({ media: 'print' });
   for (const id of cj2) {
